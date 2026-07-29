@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Lock,
   Eye,
@@ -114,7 +114,7 @@ function FieldError({ message }: { message?: string }) {
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
-
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
@@ -134,7 +134,7 @@ export default function LoginPage() {
 
       console.log(response);
 
-      // navigate("/dashboard");
+      navigate("/");
     } catch (err) {
       console.log("erro ", err);
       setServerError("Telefone ou senha incorretos. ");
