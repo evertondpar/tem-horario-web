@@ -1,23 +1,32 @@
 import { CalendarClock } from "lucide-react";
 import type { Appointment } from "../../types/appointment";
 import { formatDateLabel, formatTime } from "../../lib/date";
-import { AppointmentStatusBadge } from "./AppointmentStatusBadge";
+import { AppointmentStatusBadge } from "../appointments/AppointmentStatusBadge";
 
 type UpcomingAppointmentsListProps = {
   appointments: Appointment[];
 };
 
-export function UpcomingAppointmentsList({ appointments }: UpcomingAppointmentsListProps) {
+export function UpcomingAppointmentsList({
+  appointments,
+}: UpcomingAppointmentsListProps) {
   return (
     <div className="rounded-2xl border border-[#E4E1D8] bg-white">
       <div className="border-b border-[#E4E1D8] px-5 py-4">
-        <h2 className="text-sm font-medium text-[#12201E]">Próximos agendamentos</h2>
+        <h2 className="text-sm font-medium text-[#12201E]">
+          Próximos agendamentos
+        </h2>
       </div>
 
       {appointments.length === 0 ? (
         <div className="flex flex-col items-center gap-2 px-5 py-10 text-center">
-          <CalendarClock className="h-5 w-5 text-[#5C6B68]" strokeWidth={1.75} />
-          <p className="text-sm text-[#5C6B68]">Nenhum agendamento futuro por enquanto.</p>
+          <CalendarClock
+            className="h-5 w-5 text-[#5C6B68]"
+            strokeWidth={1.75}
+          />
+          <p className="text-sm text-[#5C6B68]">
+            Nenhum agendamento futuro por enquanto.
+          </p>
         </div>
       ) : (
         <ul className="px-5">

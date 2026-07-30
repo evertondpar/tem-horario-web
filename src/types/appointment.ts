@@ -6,6 +6,14 @@ export enum AppointmentStatus {
   COMPLETED = "completed",
 }
 
+export const APPOINTMENT_STATUS_LABELS: Record<AppointmentStatus, string> = {
+  [AppointmentStatus.SCHEDULED]: "Agendado",
+  [AppointmentStatus.CONFIRMED]: "Confirmado",
+  [AppointmentStatus.COMPLETED]: "Concluído",
+  [AppointmentStatus.CANCELED]: "Cancelado",
+  [AppointmentStatus.REFUSED]: "Recusado",
+};
+
 export type Collaborator = {
   id: number;
   name: string;

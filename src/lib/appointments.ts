@@ -45,3 +45,39 @@ export function getNextAppointment(
   const [next] = getUpcomingAppointments(appointments, referenceDate, 1);
   return next ?? null;
 }
+
+export type AppointmentFilters = {
+  /** "YYYY-MM-DD" · vazio = todas as datas */
+  date: string;
+  /** "all" = todos os colaboradores */
+  collaboratorId: number | "all";
+  /** "all" = todos os status */
+  status: AppointmentStatus | "all";
+};
+
+export const DEFAULT_APPOINTMENT_FILTERS: AppointmentFilters = {
+  date: "",
+  collaboratorId: "all",
+  status: "all",
+};
+
+/** Aplica os filtros da tela de Agendamentos e ordena por data/hora crescente. */
+export function filterAppointments(
+  appointments: Appointment[],
+  filters: AppointmentFilters
+): Appointment[] {
+  return appointments
+    .filter((a) => {
+      if (filters.date && a.appointment_date !== filters.date) return false;
+      if (filters.collaboratorId !== "all" && a.collaborator_id !== filters.collaboratorId) {
+        return false;
+      }
+      if (filters.status !== "all" && a.status !== filters.status) return false;
+      return true;
+    })
+    .sort(
+      (a, b) =>
+        combineDateTime(a.appointment_date, a.start_time).getTime() -
+        combineDateTime(b.appointment_date, b.start_time).getTime()
+    );
+}
