@@ -1,14 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import { ServicesTable } from "../components/services/ServicesTable";
-import { ServiceFormDialog, type ServiceFormData } from "../components/services/ServiceFormDialog";
+import {
+  ServiceFormDialog,
+  type ServiceFormData,
+} from "../components/services/ServiceFormDialog";
 import { DeleteServiceDialog } from "../components/services/DeleteServiceDialog";
-import { MOCK_SERVICES } from "../data/mock-services";
 import type { Service } from "../types/service";
+import { getServicos } from "@/api/establishment/servicos/getServicos";
+import { createServicos } from "@/api/establishment/servicos/createServicos";
+import { updateServicos } from "@/api/establishment/servicos/updateServicos";
+import { deleteServicos } from "@/api/establishment/servicos/deleteServico";
 
 export default function Servicos() {
   // TODO: trocar pelos dados reais (React Query + GET/POST/PATCH/DELETE /services)
-  const [services, setServices] = useState<Service[]>(MOCK_SERVICES);
+  const [services, setServices] = useState<Service[]>([]);
 
   const [isFormOpen, setFormOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
@@ -24,24 +30,57 @@ export default function Servicos() {
     setFormOpen(true);
   }
 
+  const handleGetServicos = async () => {
+    try {
+      const response = await getServicos();
+      setServices(response);
+      console.log("res ", response);
+    } catch (err) {
+      console.error("Erro ao carregar os serviços", err);
+    }
+  };
+
+  const handleCreateServicos = async (data: ServiceFormData) => {
+    try {
+      const response = await createServicos(data);
+      console.log("res ", response);
+      handleGetServicos();
+    } catch (err) {
+      console.error("Erro ao criar serviço", err);
+    }
+  };
+  const handleUpdateteServicos = async (id: string, data: ServiceFormData) => {
+    try {
+      const response = await updateServicos(id, data);
+      console.log("res ", response);
+      handleGetServicos();
+    } catch (err) {
+      console.error("Erro ao atualizar serviço", err);
+    }
+  };
+
   async function handleSubmit(data: ServiceFormData) {
     // TODO: substituir por chamada real (POST /services ou PATCH /services/:id)
     if (editingService) {
-      setServices((prev) =>
-        prev.map((s) => (s.id === editingService.id ? { ...s, ...data } : s))
-      );
+      handleUpdateteServicos(String(editingService.id), data);
     } else {
-      const nextId = services.reduce((max, s) => Math.max(max, s.id), 0) + 1;
-      setServices((prev) => [...prev, { id: nextId, ...data }]);
+      handleCreateServicos(data);
     }
   }
 
   async function handleConfirmDelete() {
     if (!deletingService) return;
     // TODO: substituir por chamada real (DELETE /services/:id)
-    setServices((prev) => prev.filter((s) => s.id !== deletingService.id));
+    // setServices((prev) => prev.filter((s) => s.id !== deletingService.id));
+    const response = await deleteServicos(String(deletingService.id));
+    console.log("res ", response);
+    handleGetServicos();
     setDeletingService(null);
   }
+
+  useEffect(() => {
+    handleGetServicos();
+  }, []);
 
   return (
     <div className="flex flex-col gap-6">
@@ -59,7 +98,11 @@ export default function Servicos() {
         </button>
       </div>
 
-      <ServicesTable services={services} onEdit={openEditDialog} onDelete={setDeletingService} />
+      <ServicesTable
+        services={services}
+        onEdit={openEditDialog}
+        onDelete={setDeletingService}
+      />
 
       <ServiceFormDialog
         open={isFormOpen}
