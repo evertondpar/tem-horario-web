@@ -2,20 +2,31 @@ import { CalendarDays, Users, Tag } from "lucide-react";
 import { StatCard } from "../components/dashboard/StatCard";
 import { NextAppointmentCard } from "../components/dashboard/NextAppointmentCard";
 import { UpcomingAppointmentsList } from "../components/dashboard/UpcomingAppointmentsList";
-import { getNextAppointment, getTodayAppointments, getUpcomingAppointments } from "../lib/appointments";
+import { DashboardSkeleton } from "../components/dashboard/DashboardSkeleton";
+import { DashboardEmptyState } from "../components/dashboard/DashboardEmptyState";
+import { DashboardErrorState } from "../components/dashboard/DashboardErrorState";
+import { useDashboardData } from "../hooks/useDashboardData";
 import {
-  MOCK_APPOINTMENTS,
-  MOCK_TOTAL_COLLABORATORS,
-  MOCK_TOTAL_SERVICES,
-} from "../data/mock-dashboard";
+  getNextAppointment,
+  getTodayAppointments,
+  getUpcomingAppointments,
+} from "../lib/appointments";
 import { AppointmentStatus } from "../types/appointment";
 
 export default function Dashboard() {
-  // TODO: trocar os mocks por dados reais (ex: React Query buscando
-  // GET /appointments, GET /collaborators/count, GET /services/count)
-  const todayAppointments = getTodayAppointments(MOCK_APPOINTMENTS);
-  const nextAppointment = getNextAppointment(MOCK_APPOINTMENTS);
-  const upcomingAppointments = getUpcomingAppointments(MOCK_APPOINTMENTS);
+  const { status, data, refetch } = useDashboardData();
+
+  if (status === "loading") return <DashboardSkeleton />;
+  if (status === "error" || !data) return <DashboardErrorState onRetry={refetch} />;
+
+  const { appointments, totalCollaborators, totalServices } = data;
+  const isEmpty = appointments.length === 0 && totalCollaborators === 0 && totalServices === 0;
+
+  if (isEmpty) return <DashboardEmptyState />;
+
+  const todayAppointments = getTodayAppointments(appointments);
+  const nextAppointment = getNextAppointment(appointments);
+  const upcomingAppointments = getUpcomingAppointments(appointments);
 
   const confirmedToday = todayAppointments.filter(
     (a) => a.status === AppointmentStatus.CONFIRMED
@@ -34,15 +45,10 @@ export default function Dashboard() {
         <StatCard
           icon={Users}
           label="Total de colaboradores"
-          value={MOCK_TOTAL_COLLABORATORS}
+          value={totalCollaborators}
           hint="cadastrados"
         />
-        <StatCard
-          icon={Tag}
-          label="Total de serviços"
-          value={MOCK_TOTAL_SERVICES}
-          hint="ativos"
-        />
+        <StatCard icon={Tag} label="Total de serviços" value={totalServices} hint="ativos" />
       </div>
 
       <UpcomingAppointmentsList appointments={upcomingAppointments} />
