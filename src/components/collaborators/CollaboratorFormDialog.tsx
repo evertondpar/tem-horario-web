@@ -3,17 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Dialog } from "@base-ui/react/dialog";
-import {
-  User,
-  Phone,
-  Lock,
-  Eye,
-  EyeOff,
-  Camera,
-  Loader2,
-  AlertCircle,
-  X,
-} from "lucide-react";
+import { User, Phone, Camera, Loader2, AlertCircle, X } from "lucide-react";
 import { cn } from "../../lib/utils";
 import type { Collaborator } from "../../types/collaborator";
 import { CollaboratorAvatar } from "./CollaboratorAvatar";
@@ -29,23 +19,21 @@ function buildCollaboratorSchema(isEditing: boolean) {
     phone: z
       .string()
       .min(1, "Informe o telefone")
-      .refine((v) => v.replace(/\D/g, "").length >= 10, "Informe um telefone válido"),
-    password: isEditing
-      ? z.union([
-          z.literal(""),
-          z.string().min(6, "A senha precisa ter pelo menos 6 caracteres"),
-        ])
-      : z.string().min(6, "A senha precisa ter pelo menos 6 caracteres"),
+      .refine(
+        (v) => v.replace(/\D/g, "").length >= 10,
+        "Informe um telefone válido",
+      ),
   });
 }
 
 type CollaboratorFormValues = {
   name: string;
   phone: string;
-  password: string;
 };
 
-export type CollaboratorFormData = CollaboratorFormValues & { photo: string | null };
+export type CollaboratorFormData = CollaboratorFormValues & {
+  photo: string | null;
+};
 
 type CollaboratorFormDialogProps = {
   open: boolean;
@@ -58,7 +46,10 @@ type CollaboratorFormDialogProps = {
 function FieldError({ message }: { message?: string }) {
   if (!message) return null;
   return (
-    <p className="mt-1.5 flex items-center gap-1 text-xs text-red-600" role="alert">
+    <p
+      className="mt-1.5 flex items-center gap-1 text-xs text-red-600"
+      role="alert"
+    >
       <AlertCircle className="h-3.5 w-3.5 shrink-0" strokeWidth={2} />
       {message}
     </p>
@@ -73,8 +64,9 @@ function CollaboratorFormInner({
   const isEditing = !!collaborator;
   const schema = buildCollaboratorSchema(isEditing);
 
-  const [showPassword, setShowPassword] = useState(false);
-  const [photo, setPhoto] = useState<string | null>(collaborator?.photo ?? null);
+  const [photo, setPhoto] = useState<string | null>(
+    collaborator?.photo ?? null,
+  );
   const [photoError, setPhotoError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -87,7 +79,6 @@ function CollaboratorFormInner({
     defaultValues: {
       name: collaborator?.name ?? "",
       phone: collaborator?.phone ?? "",
-      password: "",
     },
   });
 
@@ -137,10 +128,18 @@ function CollaboratorFormInner({
         </Dialog.Close>
       </div>
 
-      <form onSubmit={handleSubmit(submit)} noValidate className="mt-5 flex flex-col gap-4 px-6 pb-2">
+      <form
+        onSubmit={handleSubmit(submit)}
+        noValidate
+        className="mt-5 flex flex-col gap-4 px-6 pb-2"
+      >
         {/* Foto (opcional) */}
         <div className="flex items-center gap-4">
-          <CollaboratorAvatar name={collaborator?.name || "?"} photo={photo} size="lg" />
+          <CollaboratorAvatar
+            name={collaborator?.name || "?"}
+            photo={photo}
+            size="lg"
+          />
           <div className="flex flex-col gap-1">
             <div className="flex gap-2">
               <button
@@ -161,7 +160,9 @@ function CollaboratorFormInner({
                 </button>
               )}
             </div>
-            <span className="text-[0.7rem] text-[#5C6B68]">Opcional · JPG ou PNG, até {MAX_PHOTO_SIZE_MB}MB</span>
+            <span className="text-[0.7rem] text-[#5C6B68]">
+              Opcional · JPG ou PNG, até {MAX_PHOTO_SIZE_MB}MB
+            </span>
             {photoError && <FieldError message={photoError} />}
           </div>
           <input
@@ -175,7 +176,10 @@ function CollaboratorFormInner({
 
         {/* Nome */}
         <div>
-          <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-[#12201E]">
+          <label
+            htmlFor="name"
+            className="mb-1.5 block text-sm font-medium text-[#12201E]"
+          >
             Nome
           </label>
           <div className="relative">
@@ -191,7 +195,7 @@ function CollaboratorFormInner({
               className={cn(
                 "w-full rounded-xl border bg-white py-2.5 pl-10 pr-3.5 text-sm text-[#12201E] outline-none transition-colors placeholder:text-[#5C6B68]/50",
                 "focus:border-[#0F5C56] focus:ring-2 focus:ring-[#0F5C56]/15",
-                errors.name ? "border-red-300" : "border-[#E4E1D8]"
+                errors.name ? "border-red-300" : "border-[#E4E1D8]",
               )}
               {...register("name")}
             />
@@ -201,7 +205,10 @@ function CollaboratorFormInner({
 
         {/* Telefone */}
         <div>
-          <label htmlFor="phone" className="mb-1.5 block text-sm font-medium text-[#12201E]">
+          <label
+            htmlFor="phone"
+            className="mb-1.5 block text-sm font-medium text-[#12201E]"
+          >
             Telefone
           </label>
           <div className="relative">
@@ -217,51 +224,12 @@ function CollaboratorFormInner({
               className={cn(
                 "w-full rounded-xl border bg-white py-2.5 pl-10 pr-3.5 text-sm text-[#12201E] outline-none transition-colors placeholder:text-[#5C6B68]/50",
                 "focus:border-[#0F5C56] focus:ring-2 focus:ring-[#0F5C56]/15",
-                errors.phone ? "border-red-300" : "border-[#E4E1D8]"
+                errors.phone ? "border-red-300" : "border-[#E4E1D8]",
               )}
               {...register("phone")}
             />
           </div>
           <FieldError message={errors.phone?.message} />
-        </div>
-
-        {/* Senha */}
-        <div>
-          <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-[#12201E]">
-            Senha
-          </label>
-          <div className="relative">
-            <Lock
-              className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#5C6B68]"
-              strokeWidth={1.75}
-            />
-            <input
-              id="password"
-              type={showPassword ? "text" : "password"}
-              autoComplete="new-password"
-              placeholder={isEditing ? "Deixe em branco para manter a atual" : "••••••••"}
-              aria-invalid={!!errors.password}
-              className={cn(
-                "w-full rounded-xl border bg-white py-2.5 pl-10 pr-11 text-sm text-[#12201E] outline-none transition-colors placeholder:text-[#5C6B68]/50",
-                "focus:border-[#0F5C56] focus:ring-2 focus:ring-[#0F5C56]/15",
-                errors.password ? "border-red-300" : "border-[#E4E1D8]"
-              )}
-              {...register("password")}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword((v) => !v)}
-              aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5C6B68] hover:text-[#12201E]"
-            >
-              {showPassword ? (
-                <EyeOff className="h-4 w-4" strokeWidth={1.75} />
-              ) : (
-                <Eye className="h-4 w-4" strokeWidth={1.75} />
-              )}
-            </button>
-          </div>
-          <FieldError message={errors.password?.message} />
         </div>
 
         <div className="mt-2 flex items-center justify-end gap-3 border-t border-[#E4E1D8] py-4">
@@ -276,10 +244,12 @@ function CollaboratorFormInner({
             disabled={isSubmitting}
             className={cn(
               "flex items-center gap-2 rounded-xl bg-[#0F5C56] px-4 py-2 text-sm font-medium text-white transition-colors",
-              "hover:bg-[#0B4842] disabled:cursor-not-allowed disabled:opacity-70"
+              "hover:bg-[#0B4842] disabled:cursor-not-allowed disabled:opacity-70",
             )}
           >
-            {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2} />}
+            {isSubmitting && (
+              <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2} />
+            )}
             {isEditing ? "Salvar alterações" : "Criar colaborador"}
           </button>
         </div>
@@ -302,7 +272,7 @@ export function CollaboratorFormDialog({
           className={cn(
             "fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2",
             "rounded-2xl border border-[#E4E1D8] bg-white pb-2 shadow-xl outline-none",
-            "transition-all duration-150 data-[starting-style]:scale-95 data-[starting-style]:opacity-0 data-[ending-style]:scale-95 data-[ending-style]:opacity-0"
+            "transition-all duration-150 data-[starting-style]:scale-95 data-[starting-style]:opacity-0 data-[ending-style]:scale-95 data-[ending-style]:opacity-0",
           )}
         >
           {/* key força o formulário a remontar com os valores certos ao trocar de colaborador */}

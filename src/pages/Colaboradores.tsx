@@ -1,22 +1,75 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import { CollaboratorsGrid } from "../components/collaborators/CollaboratorsGrid";
+import { CollaboratorsGridSkeleton } from "../components/collaborators/CollaboratorsGridSkeleton";
+import { CollaboratorsErrorState } from "../components/collaborators/CollaboratorsErrorState";
 import {
   CollaboratorFormDialog,
   type CollaboratorFormData,
 } from "../components/collaborators/CollaboratorFormDialog";
 import { DeleteCollaboratorDialog } from "../components/collaborators/DeleteCollaboratorDialog";
-import { MOCK_COLLABORATORS } from "../data/mock-collaborators";
 import type { Collaborator } from "../types/collaborator";
+import {
+  getCollaborators,
+  type ListCollaboratorsResponse,
+} from "@/api/establishment/collaborators/getCollaborators";
+import { createCollaborators } from "@/api/establishment/collaborators/createCollaborators";
+import { updateCollaborators } from "@/api/establishment/collaborators/updateCollaborators";
+import { deleteCollaborators } from "@/api/establishment/collaborators/deleteCollaborators";
 
 export default function Colaboradores() {
   // TODO: trocar pelos dados reais (React Query + GET/POST/PATCH/DELETE /collaborators)
-  const [collaborators, setCollaborators] = useState<Collaborator[]>(MOCK_COLLABORATORS);
+  const [collaborators, setCollaborators] =
+    useState<ListCollaboratorsResponse>();
+  const [isLoading, setLoading] = useState(true);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   const [isFormOpen, setFormOpen] = useState(false);
-  const [editingCollaborator, setEditingCollaborator] = useState<Collaborator | null>(null);
-  const [deletingCollaborator, setDeletingCollaborator] = useState<Collaborator | null>(null);
+  const [editingCollaborator, setEditingCollaborator] =
+    useState<Collaborator | null>(null);
+  const [deletingCollaborator, setDeletingCollaborator] =
+    useState<Collaborator | null>(null);
+  const handleGetCollaborators = async () => {
+    setLoading(true);
+    setLoadError(false);
+    try {
+      const response = await getCollaborators();
+      setCollaborators(response);
+      console.log("res ", response);
+    } catch (err) {
+      console.error("Erro ao carregar os serviços", err);
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+      setHasLoadedOnce(true);
+    }
+  };
+  useEffect(() => {
+    handleGetCollaborators();
+  }, []);
 
+  const handleCreateCollaborators = async (data: CollaboratorFormData) => {
+    try {
+      const response = await createCollaborators(data);
+      console.log("res ", response);
+      handleGetCollaborators();
+    } catch (err) {
+      console.error("Erro ao criar colaborador", err);
+    }
+  };
+  const handleUpdateCollaborators = async (
+    id: string,
+    data: CollaboratorFormData,
+  ) => {
+    try {
+      const response = await updateCollaborators(id, data);
+      console.log("res ", response);
+      handleGetCollaborators();
+    } catch (err) {
+      console.error("Erro ao editar colaborador", err);
+    }
+  };
   function openCreateDialog() {
     setEditingCollaborator(null);
     setFormOpen(true);
@@ -28,37 +81,22 @@ export default function Colaboradores() {
   }
 
   async function handleSubmit(data: CollaboratorFormData) {
+    console.log("data ", data);
     // TODO: substituir por chamada real (POST /collaborators ou PATCH /collaborators/:id).
     // O campo "password" só deve ser enviado quando preenchido (na edição, vazio = manter a atual),
     // e a foto precisa virar um upload multipart em vez do data URL usado aqui no mock.
     if (editingCollaborator) {
-      setCollaborators((prev) =>
-        prev.map((c) =>
-          c.id === editingCollaborator.id
-            ? { ...c, name: data.name, phone: data.phone, photo: data.photo }
-            : c
-        )
-      );
+      handleUpdateCollaborators(String(editingCollaborator.id), data);
     } else {
-      const nextId = collaborators.reduce((max, c) => Math.max(max, c.id), 0) + 1;
-      setCollaborators((prev) => [
-        ...prev,
-        {
-          id: nextId,
-          name: data.name,
-          phone: data.phone,
-          photo: data.photo,
-          status: "active",
-          services: [],
-        },
-      ]);
+      handleCreateCollaborators(data);
     }
   }
 
   async function handleConfirmDelete() {
     if (!deletingCollaborator) return;
-    // TODO: substituir por chamada real (DELETE /collaborators/:id)
-    setCollaborators((prev) => prev.filter((c) => c.id !== deletingCollaborator.id));
+    const response = await deleteCollaborators(String(deletingCollaborator.id));
+    console.log("res ", response);
+    handleGetCollaborators();
     setDeletingCollaborator(null);
   }
 
@@ -78,11 +116,17 @@ export default function Colaboradores() {
         </button>
       </div>
 
-      <CollaboratorsGrid
-        collaborators={collaborators}
-        onEdit={openEditDialog}
-        onDelete={setDeletingCollaborator}
-      />
+      {!hasLoadedOnce && isLoading ? (
+        <CollaboratorsGridSkeleton />
+      ) : loadError ? (
+        <CollaboratorsErrorState onRetry={handleGetCollaborators} />
+      ) : (
+        <CollaboratorsGrid
+          collaborators={collaborators ?? []}
+          onEdit={openEditDialog}
+          onDelete={setDeletingCollaborator}
+        />
+      )}
 
       <CollaboratorFormDialog
         open={isFormOpen}

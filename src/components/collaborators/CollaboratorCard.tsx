@@ -2,15 +2,20 @@ import { Pencil, Trash2, Phone } from "lucide-react";
 import type { Collaborator } from "../../types/collaborator";
 import { CollaboratorAvatar } from "./CollaboratorAvatar";
 import { CollaboratorStatusBadge } from "./CollaboratorStatusBadge";
+import type { ListCollaboratorsResponseCollaborator } from "@/api/establishment/collaborators/getCollaborators";
 
 type CollaboratorCardProps = {
-  collaborator: Collaborator;
+  collaborator: ListCollaboratorsResponseCollaborator;
   onEdit: (collaborator: Collaborator) => void;
   onDelete: (collaborator: Collaborator) => void;
 };
 
-export function CollaboratorCard({ collaborator, onEdit, onDelete }: CollaboratorCardProps) {
-  const { name, phone, photo, status, services } = collaborator;
+export function CollaboratorCard({
+  collaborator,
+  onEdit,
+  onDelete,
+}: CollaboratorCardProps) {
+  const { name, phone, photo, services } = collaborator;
 
   return (
     <div className="flex flex-col rounded-2xl border border-[#E4E1D8] bg-white p-5">
@@ -18,7 +23,9 @@ export function CollaboratorCard({ collaborator, onEdit, onDelete }: Collaborato
         <div className="flex items-center gap-3">
           <CollaboratorAvatar name={name} photo={photo} />
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-[#12201E]">{name}</p>
+            <p className="truncate text-sm font-medium text-[#12201E]">
+              {name}
+            </p>
             <p className="mt-0.5 flex items-center gap-1 text-xs text-[#5C6B68]">
               <Phone className="h-3 w-3 shrink-0" strokeWidth={1.75} />
               {phone}
@@ -47,7 +54,7 @@ export function CollaboratorCard({ collaborator, onEdit, onDelete }: Collaborato
       </div>
 
       <div className="mt-4">
-        <CollaboratorStatusBadge status={status} />
+        <CollaboratorStatusBadge />
       </div>
 
       <div className="mt-4 border-t border-[#E4E1D8] pt-4">
@@ -55,7 +62,9 @@ export function CollaboratorCard({ collaborator, onEdit, onDelete }: Collaborato
           Serviços oferecidos
         </p>
         {services.length === 0 ? (
-          <p className="mt-2 text-xs text-[#5C6B68]">Nenhum serviço vinculado ainda.</p>
+          <p className="mt-2 text-xs text-[#5C6B68]">
+            Nenhum serviço vinculado ainda.
+          </p>
         ) : (
           <div className="mt-2 flex flex-wrap gap-1.5">
             {services.map((service) => (
