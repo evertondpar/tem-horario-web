@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import { ServicesTable } from "../components/services/ServicesTable";
+import { ServicesTableSkeleton } from "../components/services/ServicesTableSkeleton";
+import { ServicesErrorState } from "../components/services/ServicesErrorState";
 import {
   ServiceFormDialog,
   type ServiceFormData,
@@ -15,6 +17,9 @@ import { deleteServicos } from "@/api/establishment/servicos/deleteServico";
 export default function Servicos() {
   // TODO: trocar pelos dados reais (React Query + GET/POST/PATCH/DELETE /services)
   const [services, setServices] = useState<Service[]>([]);
+  const [isLoading, setLoading] = useState(true);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   const [isFormOpen, setFormOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
@@ -31,12 +36,18 @@ export default function Servicos() {
   }
 
   const handleGetServicos = async () => {
+    setLoading(true);
+    setLoadError(false);
     try {
       const response = await getServicos();
       setServices(response);
       console.log("res ", response);
     } catch (err) {
       console.error("Erro ao carregar os serviços", err);
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+      setHasLoadedOnce(true);
     }
   };
 
@@ -98,11 +109,17 @@ export default function Servicos() {
         </button>
       </div>
 
-      <ServicesTable
-        services={services}
-        onEdit={openEditDialog}
-        onDelete={setDeletingService}
-      />
+      {!hasLoadedOnce && isLoading ? (
+        <ServicesTableSkeleton />
+      ) : loadError ? (
+        <ServicesErrorState onRetry={handleGetServicos} />
+      ) : (
+        <ServicesTable
+          services={services}
+          onEdit={openEditDialog}
+          onDelete={setDeletingService}
+        />
+      )}
 
       <ServiceFormDialog
         open={isFormOpen}
