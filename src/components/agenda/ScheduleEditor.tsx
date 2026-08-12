@@ -10,13 +10,16 @@ import {
 import { DayScheduleCard } from "./DayScheduleCard";
 
 type ScheduleEditorProps = {
-  schedule: Schedule;
+  schedule: Partial<Schedule>;
   onSave: (week: WeekSlots) => Promise<void> | void;
 };
 
 export function ScheduleEditor({ schedule, onSave }: ScheduleEditorProps) {
-  const [week, setWeek] = useState<WeekSlots>(() =>
-    Object.fromEntries(WEEKDAYS.map((key) => [key, schedule[key]])) as WeekSlots
+  const [week, setWeek] = useState<WeekSlots>(
+    () =>
+      Object.fromEntries(
+        WEEKDAYS.map((key) => [key, schedule[key]]),
+      ) as WeekSlots,
   );
   const [isSaving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<string | null>(null);
@@ -24,9 +27,12 @@ export function ScheduleEditor({ schedule, onSave }: ScheduleEditorProps) {
   function toggleSlot(weekday: WeekdayKey, index: number) {
     setWeek((prev) => {
       const current = prev[weekday].slots[index];
-      if (current === SLOT_STATUS.BOOKED) return prev; // somente leitura
+      if (current === SLOT_STATUS.OCCUPIED) return prev; // somente leitura
 
-      const next = current === SLOT_STATUS.AVAILABLE ? SLOT_STATUS.UNAVAILABLE : SLOT_STATUS.AVAILABLE;
+      const next =
+        current === SLOT_STATUS.AVAILABLE
+          ? SLOT_STATUS.UNAVAILABLE
+          : SLOT_STATUS.AVAILABLE;
       const slots = [...prev[weekday].slots];
       slots[index] = next;
 
@@ -37,10 +43,12 @@ export function ScheduleEditor({ schedule, onSave }: ScheduleEditorProps) {
 
   function markAllDay(
     weekday: WeekdayKey,
-    status: typeof SLOT_STATUS.AVAILABLE | typeof SLOT_STATUS.UNAVAILABLE
+    status: typeof SLOT_STATUS.AVAILABLE | typeof SLOT_STATUS.UNAVAILABLE,
   ) {
     setWeek((prev) => {
-      const slots = prev[weekday].slots.map((s) => (s === SLOT_STATUS.BOOKED ? s : status));
+      const slots = prev[weekday].slots.map((s) =>
+        s === SLOT_STATUS.OCCUPIED ? s : status,
+      );
       return { ...prev, [weekday]: { ...prev[weekday], slots } };
     });
     setSavedAt(null);
@@ -51,7 +59,10 @@ export function ScheduleEditor({ schedule, onSave }: ScheduleEditorProps) {
     try {
       await onSave(week);
       setSavedAt(
-        new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+        new Date().toLocaleTimeString("pt-BR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
       );
     } finally {
       setSaving(false);
