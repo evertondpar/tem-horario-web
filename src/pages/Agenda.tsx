@@ -17,6 +17,7 @@ export default function Agenda() {
   const [schedule, setSchedule] = useState<Partial<Schedule>>(undefined);
 
   async function handleSave(week: WeekSlots) {
+    console.log("atualizar ", week);
     if (!schedule) return;
     // TODO: substituir por chamada real (PUT /schedules/:id)
     // await new Promise((resolve) => setTimeout(resolve, 500));
@@ -90,6 +91,7 @@ export default function Agenda() {
           key={schedule.id}
           schedule={schedule}
           onSave={handleSave}
+          readonly
         />
       )}
     </div>

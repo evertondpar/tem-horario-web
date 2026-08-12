@@ -12,9 +12,14 @@ import { DayScheduleCard } from "./DayScheduleCard";
 type ScheduleEditorProps = {
   schedule: Partial<Schedule>;
   onSave: (week: WeekSlots) => Promise<void> | void;
+  readonly?: boolean;
 };
 
-export function ScheduleEditor({ schedule, onSave }: ScheduleEditorProps) {
+export function ScheduleEditor({
+  schedule,
+  onSave,
+  readonly,
+}: ScheduleEditorProps) {
   const [week, setWeek] = useState<WeekSlots>(
     () =>
       Object.fromEntries(
@@ -78,30 +83,32 @@ export function ScheduleEditor({ schedule, onSave }: ScheduleEditorProps) {
           daySlots={week[weekday]}
           onToggleSlot={(index) => toggleSlot(weekday, index)}
           onMarkAll={(status) => markAllDay(weekday, status)}
+          readonly={readonly}
         />
       ))}
-
-      <div className="flex items-center justify-end gap-3 pb-2">
-        {savedAt && (
-          <span className="flex items-center gap-1.5 text-xs text-[#5C6B68]">
-            <Check className="h-3.5 w-3.5 text-[#0F5C56]" strokeWidth={2} />
-            Salvo às {savedAt}
-          </span>
-        )}
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={isSaving}
-          className="flex items-center gap-2 rounded-xl bg-[#0F5C56] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#0B4842] disabled:cursor-not-allowed disabled:opacity-70"
-        >
-          {isSaving ? (
-            <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2} />
-          ) : (
-            <Save className="h-4 w-4" strokeWidth={1.75} />
+      {!readonly && (
+        <div className="flex items-center justify-end gap-3 pb-2">
+          {savedAt && (
+            <span className="flex items-center gap-1.5 text-xs text-[#5C6B68]">
+              <Check className="h-3.5 w-3.5 text-[#0F5C56]" strokeWidth={2} />
+              Salvo às {savedAt}
+            </span>
           )}
-          Salvar agenda
-        </button>
-      </div>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={isSaving}
+            className="flex items-center gap-2 rounded-xl bg-[#0F5C56] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#0B4842] disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {isSaving ? (
+              <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2} />
+            ) : (
+              <Save className="h-4 w-4" strokeWidth={1.75} />
+            )}
+            Salvar agenda
+          </button>
+        </div>
+      )}
     </div>
   );
 }
