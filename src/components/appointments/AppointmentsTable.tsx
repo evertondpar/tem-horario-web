@@ -14,6 +14,7 @@ export function AppointmentsTable({
   onClearFilters,
   hasActiveFilters,
 }: AppointmentsTableProps) {
+  console.log("uee ", appointments);
   if (appointments.length === 0) {
     return (
       <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-[#E4E1D8] px-6 py-16 text-center">
@@ -59,9 +60,15 @@ export function AppointmentsTable({
               <td className="px-5 py-3.5 font-medium text-[#12201E]">
                 {appointment.client_name}
               </td>
-              <td className="px-5 py-3.5 text-[#5C6B68]">{appointment.client_phone}</td>
-              <td className="px-5 py-3.5 text-[#5C6B68]">{appointment.service.name}</td>
-              <td className="px-5 py-3.5 text-[#5C6B68]">{appointment.collaborator.name}</td>
+              <td className="px-5 py-3.5 text-[#5C6B68]">
+                {appointment.client_phone}
+              </td>
+              <td className="px-5 py-3.5 text-[#5C6B68]">
+                {appointment.service.name}
+              </td>
+              <td className="px-5 py-3.5 text-[#5C6B68]">
+                {appointment.collaborator.name}
+              </td>
               <td className="px-5 py-3.5 text-[#5C6B68]">
                 {formatDateLabel(appointment.appointment_date)}
               </td>
