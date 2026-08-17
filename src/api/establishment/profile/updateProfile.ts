@@ -2,7 +2,13 @@ import { api } from "@/api/api";
 import type { EstablishmentFormData } from "@/pages/Configuracoes";
 import { storage } from "@/utils/storage";
 
-export async function updateProfile(payload: EstablishmentFormData) {
+type UpdateProfilePayload = Pick<
+  EstablishmentFormData,
+  "name" | "phone" | "address"
+> &
+  Partial<Pick<EstablishmentFormData, "open_hour" | "close_hour">>;
+
+export async function updateProfile(payload: UpdateProfilePayload) {
   const token = storage.getToken();
 
   const { data } = await api.patch(

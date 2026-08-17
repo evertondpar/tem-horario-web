@@ -122,7 +122,7 @@ export default function Colaboradores() {
         <CollaboratorsErrorState onRetry={handleGetCollaborators} />
       ) : (
         <CollaboratorsGrid
-          collaborators={collaborators ?? []}
+          collaborators={collaborators ?? { collaborators: [] }}
           onEdit={openEditDialog}
           onDelete={setDeletingCollaborator}
         />

@@ -71,7 +71,7 @@ export function filterAppointments(
   filters: AppointmentFilters,
 ): Appointment[] {
   if (!appointments) {
-    return;
+    return [];
   }
   return appointments
     .filter((a) => {

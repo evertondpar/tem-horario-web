@@ -10,7 +10,7 @@ import { CollaboratorAvatar } from "./CollaboratorAvatar";
 
 const MAX_PHOTO_SIZE_MB = 3;
 
-function buildCollaboratorSchema(isEditing: boolean) {
+function buildCollaboratorSchema() {
   return z.object({
     name: z
       .string()
@@ -62,7 +62,7 @@ function CollaboratorFormInner({
   onSubmit,
 }: Omit<CollaboratorFormDialogProps, "open">) {
   const isEditing = !!collaborator;
-  const schema = buildCollaboratorSchema(isEditing);
+  const schema = buildCollaboratorSchema();
 
   const [photo, setPhoto] = useState<string | null>(
     collaborator?.photo ?? null,

@@ -20,7 +20,7 @@ export default function Agendamentos() {
   );
 
   const [appointmentsAndCollaborators, setAppointmentsAndCollaborators] =
-    useState<ListAppointmentsAndCollaboratorsResponse>(undefined);
+    useState<ListAppointmentsAndCollaboratorsResponse | undefined>(undefined);
 
   const appointments = useMemo(
     () =>

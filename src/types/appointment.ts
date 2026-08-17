@@ -1,10 +1,13 @@
-export enum AppointmentStatus {
-  SCHEDULED = "scheduled",
-  CONFIRMED = "confirmed",
-  REFUSED = "refused",
-  CANCELED = "canceled",
-  COMPLETED = "completed",
-}
+export const AppointmentStatus = {
+  SCHEDULED: "scheduled",
+  CONFIRMED: "confirmed",
+  REFUSED: "refused",
+  CANCELED: "canceled",
+  COMPLETED: "completed",
+} as const;
+
+export type AppointmentStatus =
+  (typeof AppointmentStatus)[keyof typeof AppointmentStatus];
 
 export const APPOINTMENT_STATUS_LABELS: Record<AppointmentStatus, string> = {
   [AppointmentStatus.SCHEDULED]: "Agendado",
