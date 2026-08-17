@@ -7,7 +7,7 @@ export type ListCollaboratorsAndSchedules = Omit<
   Collaborator,
   "password" | "collaboratorServices"
 > & {
-  schedule: Partial<Schedule>;
+  schedule: Partial<Schedule> | null;
 };
 
 export interface ListCollaboratorsAndSchedulesResponse {

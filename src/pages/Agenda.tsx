@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import { CalendarClock, Loader2 } from "lucide-react";
+import { CalendarClock, Loader2, Users } from "lucide-react";
+import { Link } from "react-router-dom";
 import { ScheduleEditor } from "../components/agenda/ScheduleEditor";
 import { SlotStatusLegend } from "../components/agenda/SlotStatusLegend";
-import type { Schedule, WeekSlots } from "../types/schedule";
+import { ErrorState } from "../components/ui/ErrorState";
+import type { WeekSlots } from "../types/schedule";
 import {
   getSchedulesAndCollaborators,
   type ListCollaboratorsAndSchedulesResponse,
@@ -14,11 +16,14 @@ export default function Agenda() {
   const [selectedCollaboratorId, setSelectedCollaboratorId] = useState(
     schedulesAndCollaborators?.collaborators[0]?.id ?? null,
   );
-  const [schedule, setSchedule] = useState<Partial<Schedule> | undefined>(
-    undefined,
-  );
   const [isLoading, setLoading] = useState(true);
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+
+  const collaborators = schedulesAndCollaborators?.collaborators ?? [];
+  const selectedCollaborator = collaborators.find(
+    (collaborator) => collaborator.id === selectedCollaboratorId,
+  );
+  const schedule = selectedCollaborator?.schedule;
 
   async function handleSave(week: WeekSlots) {
     console.log("atualizar ", week);
@@ -31,33 +36,80 @@ export default function Agenda() {
   }
 
   const handleGetSchedulesAndCollaborators = async () => {
-    setLoading(true);
     try {
       const response = await getSchedulesAndCollaborators();
       setSchedulesAndCollaborators(response);
-      setSelectedCollaboratorId(response.collaborators[0].id);
-      setSchedule(response.collaborators[0].schedule);
-      console.log("res ", response);
+      setSelectedCollaboratorId(response.collaborators[0]?.id ?? null);
+      setLoadError(false);
     } catch (err) {
-      console.error("Erro ao carregar os agendas", err);
+      console.error("Erro ao carregar as agendas", err);
+      setLoadError(true);
     } finally {
       setLoading(false);
-      setHasLoadedOnce(true);
     }
   };
+
+  const handleRetry = () => {
+    setLoading(true);
+    setLoadError(false);
+    void handleGetSchedulesAndCollaborators();
+  };
+
   useEffect(() => {
-    handleGetSchedulesAndCollaborators();
+    let ignore = false;
+
+    getSchedulesAndCollaborators()
+      .then((response) => {
+        if (ignore) return;
+        setSchedulesAndCollaborators(response);
+        setSelectedCollaboratorId(response.collaborators[0]?.id ?? null);
+        setLoadError(false);
+      })
+      .catch((err: unknown) => {
+        if (ignore) return;
+        console.error("Erro ao carregar as agendas", err);
+        setLoadError(true);
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   return (
     <div className="flex flex-col gap-6">
-      {!hasLoadedOnce && isLoading ? (
+      {isLoading ? (
         <div
           className="flex items-center justify-center gap-2 rounded-2xl border border-[#E4E1D8] bg-white py-16"
           role="status"
         >
           <Loader2 className="h-5 w-5 animate-spin text-[#0F5C56]" strokeWidth={2} />
           <span className="text-sm text-[#5C6B68]">Carregando agenda…</span>
+        </div>
+      ) : loadError ? (
+        <ErrorState
+          title="Não foi possível carregar a agenda"
+          description="Verifique sua conexão e tente novamente."
+          onRetry={handleRetry}
+        />
+      ) : collaborators.length === 0 ? (
+        <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-[#E4E1D8] bg-white px-6 py-16 text-center">
+          <Users className="h-5 w-5 text-[#5C6B68]" strokeWidth={1.75} />
+          <p className="text-sm font-medium text-[#12201E]">
+            Nenhum colaborador cadastrado
+          </p>
+          <p className="max-w-sm text-sm text-[#5C6B68]">
+            Cadastre um colaborador para visualizar e configurar sua agenda.
+          </p>
+          <Link
+            to="/colaboradores"
+            className="mt-2 rounded-xl bg-[#0F5C56] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#0B4842]"
+          >
+            Cadastrar colaborador
+          </Link>
         </div>
       ) : (
         <>
@@ -75,12 +127,11 @@ export default function Agenda() {
                 onChange={(e) => setSelectedCollaboratorId(Number(e.target.value))}
                 className="w-full max-w-xs rounded-xl border border-[#E4E1D8] bg-white py-2.5 px-3.5 text-sm text-[#12201E] outline-none transition-colors focus:border-[#0F5C56] focus:ring-2 focus:ring-[#0F5C56]/15 sm:w-auto"
               >
-                {schedulesAndCollaborators &&
-                  schedulesAndCollaborators?.collaborators.map((collaborator) => (
-                    <option key={collaborator.id} value={collaborator.id}>
-                      {collaborator.name}
-                    </option>
-                  ))}
+                {collaborators.map((collaborator) => (
+                  <option key={collaborator.id} value={collaborator.id}>
+                    {collaborator.name}
+                  </option>
+                ))}
               </select>
             </div>
 
