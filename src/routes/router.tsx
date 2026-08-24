@@ -14,8 +14,22 @@ import CollaboratorDashboard from "../pages/collaborator/CollaboratorDashboard";
 import CollaboratorAppointments from "../pages/collaborator/CollaboratorAppointments";
 import CollaboratorSchedule from "../pages/collaborator/CollaboratorSchedule";
 import CollaboratorServices from "../pages/collaborator/CollaboratorServices";
+import ClientLayout from "../components/client/ClientLayout";
+import ClientHome from "../pages/client/ClientHome";
+import ClientAuth from "../pages/client/ClientAuth";
+import BookingPage from "../pages/client/BookingPage";
+import ClientAppointments from "../pages/client/ClientAppointments";
 
 export const router = createBrowserRouter([
+  {
+    element: <ClientLayout />,
+    children: [
+      { path: "/", element: <ClientHome /> },
+      { path: "/estabelecimentos/:id/agendar", element: <BookingPage /> },
+    ],
+  },
+  { path: "/entrar", element: <ClientAuth /> },
+  { path: "/cadastro", element: <ClientAuth /> },
   {
     path: "/login",
     element: <LoginPage />,
@@ -31,7 +45,7 @@ export const router = createBrowserRouter([
         element: <AppShell />,
         children: [
           {
-            path: "/",
+            path: "/painel",
             element: <Dashboard />,
           },
           {
@@ -54,6 +68,17 @@ export const router = createBrowserRouter([
             path: "/configuracoes",
             element: <Configuracoes />,
           },
+        ],
+      },
+    ],
+  },
+  {
+    element: <ProtectedRoute role="client" />,
+    children: [
+      {
+        element: <ClientLayout />,
+        children: [
+          { path: "/meus-agendamentos", element: <ClientAppointments /> },
         ],
       },
     ],

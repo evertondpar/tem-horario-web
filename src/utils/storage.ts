@@ -1,4 +1,4 @@
-export type UserRole = "establishment" | "collaborator";
+export type UserRole = "establishment" | "collaborator" | "client";
 
 export type SessionUser = {
   id: number;
@@ -17,7 +17,7 @@ export type SessionEstablishment = {
 export type Session = {
   role: UserRole;
   user: SessionUser;
-  establishment: SessionEstablishment;
+  establishment?: SessionEstablishment;
 };
 
 const SESSION_KEY = "tem-horario-session";

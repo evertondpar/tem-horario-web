@@ -16,7 +16,7 @@ export type NavItem = {
 };
 
 export const NAV_ITEMS: NavItem[] = [
-  { label: "Dashboard", path: "/", icon: LayoutDashboard },
+  { label: "Dashboard", path: "/painel", icon: LayoutDashboard },
   { label: "Serviços", path: "/servicos", icon: Tag },
   { label: "Colaboradores", path: "/colaboradores", icon: Users },
   { label: "Agenda", path: "/agenda", icon: Calendar },

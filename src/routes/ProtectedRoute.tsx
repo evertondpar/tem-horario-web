@@ -7,11 +7,13 @@ export default function ProtectedRoute({ role }: { role?: UserRole }) {
   const location = useLocation();
 
   if (!token || !session) {
-    return <Navigate to={role === "collaborator" ? "/login/colaborador" : "/login"} replace state={{ from: location }} />;
+    const loginPath = role === "collaborator" ? "/login/colaborador" : role === "client" ? "/entrar" : "/login";
+    return <Navigate to={loginPath} replace state={{ from: location }} />;
   }
 
   if (role && session.role !== role) {
-    return <Navigate to={session.role === "collaborator" ? "/colaborador" : "/"} replace />;
+    const homePath = session.role === "collaborator" ? "/colaborador" : session.role === "client" ? "/" : "/painel";
+    return <Navigate to={homePath} replace />;
   }
 
   return <Outlet />;

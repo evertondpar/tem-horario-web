@@ -53,7 +53,7 @@ export default function CollaboratorDashboard() {
       <div className="rounded-2xl border border-[#E4E1D8] bg-white p-5">
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0F5C56]/10 text-[#0F5C56]"><UserRound className="h-5 w-5" /></span>
-          <div><p className="font-medium text-[#12201E]">{session?.user.name}</p><p className="text-sm text-[#5C6B68]">{session?.establishment.name}</p></div>
+          <div><p className="font-medium text-[#12201E]">{session?.user.name}</p><p className="text-sm text-[#5C6B68]">{session?.establishment?.name}</p></div>
         </div>
         <div className="mt-5 flex flex-wrap gap-2">
           <Link to="/colaborador/agendamentos" className="rounded-xl bg-[#0F5C56] px-4 py-2 text-sm font-medium text-white">Ver agendamentos</Link>

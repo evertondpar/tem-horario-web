@@ -146,7 +146,7 @@ export default function LoginPage() {
           user: response.establishment,
           establishment: response.establishment,
         });
-        navigate("/");
+        navigate("/painel");
       }
     } catch (err) {
       console.log("erro ", err);

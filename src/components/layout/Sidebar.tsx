@@ -35,7 +35,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             <li key={path}>
               <NavLink
                 to={path}
-                end={path === "/" || path === "/colaborador"}
+                end={path === "/painel" || path === "/colaborador"}
                 onClick={onNavigate}
                 className={({ isActive }) =>
                   cn(
@@ -70,7 +70,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         <div className="rounded-lg px-1 py-1.5">
           <EstablishmentAvatar
             name={session?.user.name ?? "Minha conta"}
-            subtitle={session?.role === "collaborator" ? session.establishment.name : "Estabelecimento"}
+            subtitle={session?.role === "collaborator" ? session.establishment?.name ?? "Colaborador" : "Estabelecimento"}
             imageUrl={session?.user.photo ?? undefined}
           />
         </div>
