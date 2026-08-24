@@ -1,6 +1,7 @@
 import { useLocation } from "react-router-dom";
 import { Menu } from "lucide-react";
-import { NAV_ITEMS } from "./nav-items";
+import { COLLABORATOR_NAV_ITEMS, NAV_ITEMS } from "./nav-items";
+import { storage } from "../../utils/storage";
 
 type HeaderProps = {
   onMenuClick: () => void;
@@ -8,7 +9,8 @@ type HeaderProps = {
 
 export function Header({ onMenuClick }: HeaderProps) {
   const { pathname } = useLocation();
-  const current = NAV_ITEMS.find((item) =>
+  const navItems = storage.getSession()?.role === "collaborator" ? COLLABORATOR_NAV_ITEMS : NAV_ITEMS;
+  const current = navItems.find((item) =>
     item.path === "/" ? pathname === "/" : pathname.startsWith(item.path)
   );
 

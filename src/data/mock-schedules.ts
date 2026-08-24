@@ -28,7 +28,7 @@ function buildDaySlots({
   for (let i = openIndex; i < closeIndex; i++) slots[i] = SLOT_STATUS.AVAILABLE;
   for (let i = lunch[0]; i < lunch[1]; i++) slots[i] = SLOT_STATUS.UNAVAILABLE;
   booked.forEach((i) => {
-    slots[i] = SLOT_STATUS.BOOKED;
+    slots[i] = SLOT_STATUS.OCCUPIED;
   });
 
   return slots;

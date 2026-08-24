@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Lock,
   Eye,
@@ -17,7 +17,7 @@ import clsx, { type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import "@fontsource-variable/geist";
 import "./LoginPage.css";
-import { login } from "@/api/auth";
+import { login, loginCollaborator } from "@/api/auth";
 import { storage } from "@/utils/storage";
 
 function cn(...inputs: ClassValue[]) {
@@ -115,6 +115,8 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const isCollaborator = pathname === "/login/colaborador";
   const {
     register,
     handleSubmit,
@@ -126,15 +128,26 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginFormData) => {
     setServerError(null);
-    setServerError(null);
     try {
-      const response = await login(data);
-
-      storage.setToken(response.access_token);
-
-      console.log(response);
-
-      navigate("/");
+      if (isCollaborator) {
+        const response = await loginCollaborator(data);
+        storage.setToken(response.access_token);
+        storage.setSession({
+          role: "collaborator",
+          user: response.collaborator,
+          establishment: response.establishment,
+        });
+        navigate("/colaborador");
+      } else {
+        const response = await login(data);
+        storage.setToken(response.access_token);
+        storage.setSession({
+          role: "establishment",
+          user: response.establishment,
+          establishment: response.establishment,
+        });
+        navigate("/");
+      }
     } catch (err) {
       console.log("erro ", err);
       setServerError("Telefone ou senha incorretos. ");
@@ -162,8 +175,9 @@ export default function LoginPage() {
               Sempre existe um horário livre esperando por alguém.
             </h1>
             <p className="mt-4 text-[0.95rem] leading-relaxed text-white/60">
-              É isso que seus clientes veem em segundos. Entre para organizar a
-              agenda do seu negócio.
+              {isCollaborator
+                ? "Consulte seus próximos atendimentos e organize sua disponibilidade em poucos passos."
+                : "É isso que seus clientes veem em segundos. Entre para organizar a agenda do seu negócio."}
             </p>
           </div>
           <SchedulePreview />
@@ -192,7 +206,9 @@ export default function LoginPage() {
             Entrar
           </h2>
           <p className="mt-1.5 text-sm text-[#5C6B68]">
-            Acesse o painel do seu estabelecimento.
+            {isCollaborator
+              ? "Acesse seu painel de colaborador."
+              : "Acesse o painel do seu estabelecimento."}
           </p>
 
           <form
@@ -332,12 +348,16 @@ export default function LoginPage() {
           </form>
 
           <p className="mt-8 text-center text-sm text-[#5C6B68]">
-            Ainda não tem uma conta?{" "}
+            {isCollaborator
+              ? "É responsável pelo estabelecimento? "
+              : "Faz parte da equipe? "}
             <Link
-              to="/cadastro"
+              to={isCollaborator ? "/login" : "/login/colaborador"}
               className="font-medium text-[#0F5C56] hover:underline"
             >
-              Cadastre seu estabelecimento
+              {isCollaborator
+                ? "Entrar como estabelecimento"
+                : "Entrar como colaborador"}
             </Link>
           </p>
         </div>

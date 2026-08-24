@@ -1,10 +1,9 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { CalendarCheck2, X } from "lucide-react";
 import { cn } from "../../lib/utils";
-import { NAV_ITEMS } from "./nav-items";
+import { COLLABORATOR_NAV_ITEMS, NAV_ITEMS } from "./nav-items";
 import { EstablishmentAvatar } from "./EstablishmentAvatar";
 import { LogoutButton } from "./LogoutButton";
-import { MOCK_ESTABLISHMENT } from "../../data/mock-establishment";
 import "../../styles/brand.css";
 import { storage } from "@/utils/storage";
 
@@ -15,6 +14,8 @@ type SidebarProps = {
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const navigate = useNavigate();
+  const session = storage.getSession();
+  const navItems = session?.role === "collaborator" ? COLLABORATOR_NAV_ITEMS : NAV_ITEMS;
   return (
     <div className="flex h-full flex-col">
       {/* Marca */}
@@ -30,11 +31,11 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       {/* Menu */}
       <nav className="flex-1 overflow-y-auto px-3 py-2">
         <ul className="flex flex-col gap-0.5">
-          {NAV_ITEMS.map(({ label, path, icon: Icon }) => (
+          {navItems.map(({ label, path, icon: Icon }) => (
             <li key={path}>
               <NavLink
                 to={path}
-                end={path === "/"}
+                end={path === "/" || path === "/colaborador"}
                 onClick={onNavigate}
                 className={({ isActive }) =>
                   cn(
@@ -68,16 +69,17 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       <div className="border-t border-[#E4E1D8] p-3">
         <div className="rounded-lg px-1 py-1.5">
           <EstablishmentAvatar
-            name={MOCK_ESTABLISHMENT.name}
-            subtitle="Plano Profissional"
-            imageUrl={MOCK_ESTABLISHMENT.photo ?? undefined}
+            name={session?.user.name ?? "Minha conta"}
+            subtitle={session?.role === "collaborator" ? session.establishment.name : "Estabelecimento"}
+            imageUrl={session?.user.photo ?? undefined}
           />
         </div>
         <LogoutButton
           className="mt-1"
           onLogout={() => {
-            storage.removeToken();
-            navigate("/login");
+            const role = storage.getSession()?.role;
+            storage.clear();
+            navigate(role === "collaborator" ? "/login/colaborador" : "/login");
           }}
         />
       </div>

@@ -5,6 +5,7 @@ import {
   Calendar,
   ClipboardList,
   Settings,
+  BriefcaseBusiness,
   type LucideIcon,
 } from "lucide-react";
 
@@ -21,4 +22,11 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Agenda", path: "/agenda", icon: Calendar },
   { label: "Agendamentos", path: "/agendamentos", icon: ClipboardList },
   { label: "Configurações", path: "/configuracoes", icon: Settings },
+];
+
+export const COLLABORATOR_NAV_ITEMS: NavItem[] = [
+  { label: "Visão geral", path: "/colaborador", icon: LayoutDashboard },
+  { label: "Meus agendamentos", path: "/colaborador/agendamentos", icon: ClipboardList },
+  { label: "Minha agenda", path: "/colaborador/agenda", icon: Calendar },
+  { label: "Meus serviços", path: "/colaborador/servicos", icon: BriefcaseBusiness },
 ];

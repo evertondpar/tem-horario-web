@@ -8,7 +8,7 @@ import { cn } from "../../lib/utils";
 
 type SlotTimelineProps = {
   slots: SlotStatusValue[];
-  onToggle: (index: number) => void;
+  onToggle?: (index: number) => void;
 };
 
 const GRID_STYLE = {
@@ -41,8 +41,8 @@ export function SlotTimeline({ slots, onToggle }: SlotTimelineProps) {
             <button
               key={index}
               type="button"
-              disabled={status === SLOT_STATUS.OCCUPIED}
-              onClick={() => onToggle(index)}
+              disabled={!onToggle || status === SLOT_STATUS.OCCUPIED}
+              onClick={() => onToggle?.(index)}
               title={`${slotRangeLabel(index)} · ${slotStatusLabel(status)}`}
               aria-label={`${slotRangeLabel(index)}, ${slotStatusLabel(status)}`}
               className={cn(

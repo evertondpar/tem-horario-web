@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Dialog } from "@base-ui/react/dialog";
-import { User, Phone, Camera, Loader2, AlertCircle, X } from "lucide-react";
+import { User, Phone, Camera, Loader2, AlertCircle, X, Lock } from "lucide-react";
 import { cn } from "../../lib/utils";
 import type { Collaborator } from "../../types/collaborator";
 import { CollaboratorAvatar } from "./CollaboratorAvatar";
@@ -23,12 +23,17 @@ function buildCollaboratorSchema(isEditing: boolean) {
         (v) => v.replace(/\D/g, "").length >= 10,
         "Informe um telefone válido",
       ),
+    password: z.string().refine(
+      (value) => (isEditing && value.length === 0) || value.length >= 6,
+      "A senha precisa ter pelo menos 6 caracteres",
+    ),
   });
 }
 
 type CollaboratorFormValues = {
   name: string;
   phone: string;
+  password: string;
 };
 
 export type CollaboratorFormData = CollaboratorFormValues & {
@@ -79,6 +84,7 @@ function CollaboratorFormInner({
     defaultValues: {
       name: collaborator?.name ?? "",
       phone: collaborator?.phone ?? "",
+      password: "",
     },
   });
 
@@ -103,7 +109,9 @@ function CollaboratorFormInner({
   }
 
   const submit = async (data: CollaboratorFormValues) => {
-    await onSubmit({ ...data, photo });
+    const payload = { ...data, photo };
+    if (isEditing && !payload.password) delete (payload as Partial<CollaboratorFormData>).password;
+    await onSubmit(payload);
     onOpenChange(false);
   };
 
@@ -230,6 +238,36 @@ function CollaboratorFormInner({
             />
           </div>
           <FieldError message={errors.phone?.message} />
+        </div>
+
+        {/* Senha de acesso */}
+        <div>
+          <label
+            htmlFor="collaborator-password"
+            className="mb-1.5 block text-sm font-medium text-[#12201E]"
+          >
+            Senha {isEditing && <span className="font-normal text-[#5C6B68]">(opcional)</span>}
+          </label>
+          <div className="relative">
+            <Lock
+              className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#5C6B68]"
+              strokeWidth={1.75}
+            />
+            <input
+              id="collaborator-password"
+              type="password"
+              autoComplete="new-password"
+              placeholder={isEditing ? "Deixe em branco para manter" : "Mínimo de 6 caracteres"}
+              aria-invalid={!!errors.password}
+              className={cn(
+                "w-full rounded-xl border bg-white py-2.5 pl-10 pr-3.5 text-sm text-[#12201E] outline-none transition-colors placeholder:text-[#5C6B68]/50",
+                "focus:border-[#0F5C56] focus:ring-2 focus:ring-[#0F5C56]/15",
+                errors.password ? "border-red-300" : "border-[#E4E1D8]",
+              )}
+              {...register("password")}
+            />
+          </div>
+          <FieldError message={errors.password?.message} />
         </div>
 
         <div className="mt-2 flex items-center justify-end gap-3 border-t border-[#E4E1D8] py-4">

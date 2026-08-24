@@ -10,11 +10,11 @@ import {
 
 export default function Agenda() {
   const [schedulesAndCollaborators, setSchedulesAndCollaborators] =
-    useState<ListCollaboratorsAndSchedulesResponse>(undefined);
+    useState<ListCollaboratorsAndSchedulesResponse | undefined>(undefined);
   const [selectedCollaboratorId, setSelectedCollaboratorId] = useState(
     schedulesAndCollaborators?.collaborators[0]?.id ?? null,
   );
-  const [schedule, setSchedule] = useState<Partial<Schedule>>(undefined);
+  const [schedule, setSchedule] = useState<Partial<Schedule> | undefined>(undefined);
   const [isLoading, setLoading] = useState(true);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
