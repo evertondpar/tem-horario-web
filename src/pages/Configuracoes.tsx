@@ -18,6 +18,7 @@ import { ErrorState } from "../components/ui/ErrorState";
 import { MOCK_ESTABLISHMENT } from "../data/mock-establishment";
 import { getProfile } from "@/api/establishment/profile/getProfile";
 import { updateProfile } from "@/api/establishment/profile/updateProfile";
+import { updatePhoto } from "@/api/establishment/profile/updatePhoto";
 
 const MAX_PHOTO_SIZE_MB = 3;
 const TIME_REGEX = /^([01]\d|2[0-3]):([0-5]\d)$/;
@@ -74,6 +75,10 @@ export default function Configuracoes() {
   const [photo, setPhoto] = useState<string | null>(
     MOCK_ESTABLISHMENT.photo ?? null,
   );
+  const [newPhoto, setNewPhoto] = useState<string | null>(
+    MOCK_ESTABLISHMENT.photo ?? null,
+  );
+  const [updateFile, setUpdateFile] = useState<File>();
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [isLoading, setLoading] = useState(true);
@@ -107,8 +112,9 @@ export default function Configuracoes() {
 
     setPhotoError(null);
     const reader = new FileReader();
-    reader.onload = () => setPhoto(reader.result as string);
+    reader.onload = () => setNewPhoto(reader.result as string);
     reader.readAsDataURL(file);
+    setUpdateFile(file);
   }
 
   async function onSubmit(data: EstablishmentFormData) {
@@ -132,6 +138,26 @@ export default function Configuracoes() {
       handleGetProfile();
     } catch (err) {
       console.error("Erro ao atualizar serviço", JSON.stringify(err));
+      setSubmitError(getApiErrorMessage(err));
+      handleGetProfile();
+      // Ex: "Existem agendamentos fora do novo horário de funcionamento."
+    }
+  }
+  async function onSubmitPhoto() {
+    setSubmitError(null);
+    try {
+      const response = await updatePhoto({ photo: updateFile });
+      console.log("res ", response);
+      setSavedAt(
+        new Date().toLocaleTimeString("pt-BR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      );
+      handleGetProfile();
+      setNewPhoto(null);
+    } catch (err) {
+      console.error("Erro ao atualizar foto", JSON.stringify(err));
       setSubmitError(getApiErrorMessage(err));
       handleGetProfile();
       // Ex: "Existem agendamentos fora do novo horário de funcionamento."
@@ -218,9 +244,9 @@ export default function Configuracoes() {
 
             {/* Foto */}
             <div className="flex items-center gap-4">
-              {photo ? (
+              {photo || newPhoto ? (
                 <img
-                  src={photo}
+                  src={newPhoto || photo}
                   alt="Foto do estabelecimento"
                   className="h-16 w-16 shrink-0 rounded-full border border-[#E4E1D8] object-cover"
                 />
@@ -242,10 +268,22 @@ export default function Configuracoes() {
                   {photo && (
                     <button
                       type="button"
-                      onClick={() => setPhoto(null)}
+                      onClick={() => {
+                        setPhoto(null);
+                        setNewPhoto(null);
+                      }}
                       className="rounded-lg px-3 py-1.5 text-xs font-medium text-[#5C6B68] hover:bg-red-50 hover:text-red-600"
                     >
                       Remover
+                    </button>
+                  )}
+                  {newPhoto && (
+                    <button
+                      type="button"
+                      onClick={onSubmitPhoto}
+                      className="rounded-lg px-3 py-1.5 text-xs font-medium text-[#5C6B68] hover:bg-green-50 hover:text-green-600"
+                    >
+                      Salvar
                     </button>
                   )}
                 </div>
