@@ -12,6 +12,7 @@ import {
   getUpcomingAppointments,
 } from "../lib/appointments";
 import { AppointmentStatus } from "../types/appointment";
+import { OnboardingChecklist } from "../components/onboarding/OnboardingChecklist";
 
 export default function Dashboard() {
   const { status, data, refetch } = useDashboardData();
@@ -22,7 +23,7 @@ export default function Dashboard() {
   const { appointments, totalCollaborators, totalServices } = data;
   const isEmpty = appointments.length === 0 && totalCollaborators === 0 && totalServices === 0;
 
-  if (isEmpty) return <DashboardEmptyState />;
+  if (isEmpty) return <div className="flex flex-col gap-6"><OnboardingChecklist /><DashboardEmptyState /></div>;
 
   const todayAppointments = getTodayAppointments(appointments);
   const nextAppointment = getNextAppointment(appointments);
@@ -34,6 +35,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col gap-6">
+      <OnboardingChecklist />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           icon={CalendarDays}

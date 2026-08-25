@@ -19,6 +19,8 @@ import ClientHome from "../pages/client/ClientHome";
 import ClientAuth from "../pages/client/ClientAuth";
 import BookingPage from "../pages/client/BookingPage";
 import ClientAppointments from "../pages/client/ClientAppointments";
+import EstablishmentSignup from "../pages/onboarding/EstablishmentSignup";
+import EstablishmentOnboarding from "../pages/onboarding/EstablishmentOnboarding";
 
 export const router = createBrowserRouter([
   {
@@ -30,6 +32,7 @@ export const router = createBrowserRouter([
   },
   { path: "/entrar", element: <ClientAuth /> },
   { path: "/cadastro", element: <ClientAuth /> },
+  { path: "/cadastro-estabelecimento", element: <EstablishmentSignup /> },
   {
     path: "/login",
     element: <LoginPage />,
@@ -41,6 +44,7 @@ export const router = createBrowserRouter([
   {
     element: <ProtectedRoute role="establishment" />,
     children: [
+      { path: "/onboarding", element: <EstablishmentOnboarding /> },
       {
         element: <AppShell />,
         children: [

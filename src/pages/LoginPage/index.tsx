@@ -146,7 +146,7 @@ export default function LoginPage() {
           user: response.establishment,
           establishment: response.establishment,
         });
-        navigate("/painel");
+        navigate(response.establishment.onboarding_completed === false ? "/onboarding" : "/painel");
       }
     } catch (err) {
       console.log("erro ", err);
@@ -347,7 +347,11 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="mt-8 text-center text-sm text-[#5C6B68]">
+          {!isCollaborator && <p className="mt-8 text-center text-sm text-[#5C6B68]">
+            Ainda não usa o tem horário?{" "}
+            <Link to="/cadastro-estabelecimento" className="font-medium text-[#0F5C56] hover:underline">Cadastre seu estabelecimento</Link>
+          </p>}
+          <p className={`${isCollaborator ? "mt-8" : "mt-3"} text-center text-sm text-[#5C6B68]`}>
             {isCollaborator
               ? "É responsável pelo estabelecimento? "
               : "Faz parte da equipe? "}

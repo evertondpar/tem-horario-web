@@ -12,6 +12,7 @@ export type SessionEstablishment = {
   name: string;
   phone: string;
   photo?: string | null;
+  onboarding_completed?: boolean;
 };
 
 export type Session = {
