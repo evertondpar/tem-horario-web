@@ -6,6 +6,9 @@ import { EstablishmentAvatar } from "./EstablishmentAvatar";
 import { LogoutButton } from "./LogoutButton";
 import "../../styles/brand.css";
 import { storage } from "@/utils/storage";
+import { useEffect, useState } from "react";
+import { getDashboardInfos } from "@/api/establishment/getDashboardInfos";
+import { getCollaboratorDashboard } from "@/api/collaborator/dashboard";
 
 type SidebarProps = {
   mobileOpen: boolean;
@@ -14,7 +17,32 @@ type SidebarProps = {
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const navigate = useNavigate();
-  const session = storage.getSession();
+  const [session, setSession] = useState(storage.getSession());
+  useEffect(() => {
+    const refreshSession = () => setSession(storage.getSession());
+    window.addEventListener("tem-horario-session-updated", refreshSession);
+    if (storage.getSession()?.role === "establishment") {
+      void getDashboardInfos().then(({ establishment }) => {
+        const current = storage.getSession();
+        if (current?.role !== "establishment") return;
+        storage.setSession({
+          ...current,
+          user: { ...current.user, ...establishment },
+          establishment: { ...current.establishment, ...establishment },
+        });
+      });
+    } else if (storage.getSession()?.role === "collaborator") {
+      void getCollaboratorDashboard().then(({ collaborator }) => {
+        const current = storage.getSession();
+        if (current?.role !== "collaborator") return;
+        storage.setSession({
+          ...current,
+          user: { ...current.user, ...collaborator },
+        });
+      });
+    }
+    return () => window.removeEventListener("tem-horario-session-updated", refreshSession);
+  }, []);
   const navItems = session?.role === "collaborator" ? COLLABORATOR_NAV_ITEMS : NAV_ITEMS;
   return (
     <div className="flex h-full flex-col">
@@ -69,9 +97,9 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       <div className="border-t border-[#E4E1D8] p-3">
         <div className="rounded-lg px-1 py-1.5">
           <EstablishmentAvatar
-            name={session?.user.name ?? "Minha conta"}
+            name={session?.role === "collaborator" ? session.user.name : session?.establishment?.name ?? session?.user.name ?? "Minha conta"}
             subtitle={session?.role === "collaborator" ? session.establishment?.name ?? "Colaborador" : "Estabelecimento"}
-            imageUrl={session?.user.photo ?? undefined}
+            imageUrl={session?.role === "collaborator" ? session.user.photo ?? undefined : session?.establishment?.photo ?? session?.user.photo ?? undefined}
           />
         </div>
         <LogoutButton

@@ -42,8 +42,10 @@ export const storage = {
     }
   },
 
-  setSession: (session: Session) =>
-    localStorage.setItem(SESSION_KEY, JSON.stringify(session)),
+  setSession: (session: Session) => {
+    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    window.dispatchEvent(new Event("tem-horario-session-updated"));
+  },
 
   clear: () => {
     localStorage.removeItem("token");

@@ -16,6 +16,7 @@ import {
 import { createCollaborators } from "@/api/establishment/collaborators/createCollaborators";
 import { updateCollaborators } from "@/api/establishment/collaborators/updateCollaborators";
 import { deleteCollaborators } from "@/api/establishment/collaborators/deleteCollaborators";
+import { updateCollaboratorPhoto } from "@/api/establishment/collaborators/updateCollaboratorPhoto";
 
 export default function Colaboradores() {
   // TODO: trocar pelos dados reais (React Query + GET/POST/PATCH/DELETE /collaborators)
@@ -52,6 +53,9 @@ export default function Colaboradores() {
   const handleCreateCollaborators = async (data: CollaboratorFormData) => {
     try {
       const response = await createCollaborators(data);
+      if (data.photoFile && response.id) {
+        await updateCollaboratorPhoto(String(response.id), data.photoFile);
+      }
       console.log("res ", response);
       handleGetCollaborators();
     } catch (err) {
@@ -75,6 +79,12 @@ export default function Colaboradores() {
     setFormOpen(true);
   }
 
+  async function handlePhotoSubmit(file: File) {
+    if (!editingCollaborator) return;
+    await updateCollaboratorPhoto(String(editingCollaborator.id), file);
+    await handleGetCollaborators();
+  }
+
   function openEditDialog(collaborator: Collaborator) {
     setEditingCollaborator(collaborator);
     setFormOpen(true);
@@ -86,9 +96,9 @@ export default function Colaboradores() {
     // O campo "password" só deve ser enviado quando preenchido (na edição, vazio = manter a atual),
     // e a foto precisa virar um upload multipart em vez do data URL usado aqui no mock.
     if (editingCollaborator) {
-      handleUpdateCollaborators(String(editingCollaborator.id), data);
+      await handleUpdateCollaborators(String(editingCollaborator.id), data);
     } else {
-      handleCreateCollaborators(data);
+      await handleCreateCollaborators(data);
     }
   }
 
@@ -133,6 +143,7 @@ export default function Colaboradores() {
         onOpenChange={setFormOpen}
         collaborator={editingCollaborator}
         onSubmit={handleSubmit}
+        onPhotoSubmit={handlePhotoSubmit}
       />
 
       <DeleteCollaboratorDialog

@@ -19,6 +19,7 @@ import { MOCK_ESTABLISHMENT } from "../data/mock-establishment";
 import { getProfile } from "@/api/establishment/profile/getProfile";
 import { updateProfile } from "@/api/establishment/profile/updateProfile";
 import { updatePhoto } from "@/api/establishment/profile/updatePhoto";
+import { storage } from "@/utils/storage";
 
 const MAX_PHOTO_SIZE_MB = 3;
 const TIME_REGEX = /^([01]\d|2[0-3]):([0-5]\d)$/;
@@ -144,9 +145,20 @@ export default function Configuracoes() {
     }
   }
   async function onSubmitPhoto() {
+    if (!updateFile) return;
     setSubmitError(null);
     try {
       const response = await updatePhoto({ photo: updateFile });
+      const session = storage.getSession();
+      if (session?.role === "establishment") {
+        storage.setSession({
+          ...session,
+          user: { ...session.user, photo: response.photo },
+          establishment: session.establishment
+            ? { ...session.establishment, photo: response.photo }
+            : undefined,
+        });
+      }
       console.log("res ", response);
       setSavedAt(
         new Date().toLocaleTimeString("pt-BR", {
@@ -246,7 +258,7 @@ export default function Configuracoes() {
             <div className="flex items-center gap-4">
               {photo || newPhoto ? (
                 <img
-                  src={newPhoto || photo}
+                  src={newPhoto ?? photo ?? undefined}
                   alt="Foto do estabelecimento"
                   className="h-16 w-16 shrink-0 rounded-full border border-[#E4E1D8] object-cover"
                 />

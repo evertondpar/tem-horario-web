@@ -39,6 +39,12 @@ export type RawAppointment = {
 };
 
 export type DashboardInfosResponse = {
+  establishment: {
+    id: number;
+    name: string;
+    phone: string;
+    photo: string | null;
+  };
   services: RawService[];
   collaborators: RawCollaborator[];
   appointments: RawAppointment[];

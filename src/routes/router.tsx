@@ -21,6 +21,7 @@ import BookingPage from "../pages/client/BookingPage";
 import ClientAppointments from "../pages/client/ClientAppointments";
 import EstablishmentSignup from "../pages/onboarding/EstablishmentSignup";
 import EstablishmentOnboarding from "../pages/onboarding/EstablishmentOnboarding";
+import ClientProfile from "../pages/client/ClientProfile";
 
 export const router = createBrowserRouter([
   {
@@ -83,6 +84,7 @@ export const router = createBrowserRouter([
         element: <ClientLayout />,
         children: [
           { path: "/meus-agendamentos", element: <ClientAppointments /> },
+          { path: "/perfil", element: <ClientProfile /> },
         ],
       },
     ],

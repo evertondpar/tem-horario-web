@@ -7,10 +7,15 @@ export async function updateCollaborators(
   payload: CollaboratorFormData,
 ) {
   const token = storage.getToken();
+  const body = {
+    name: payload.name,
+    phone: payload.phone,
+    ...(payload.password ? { password: payload.password } : {}),
+  };
 
   const { data } = await api.patch(
     `/collaborators/${id}`,
-    JSON.stringify(payload),
+    body,
     {
       headers: { Authorization: `Bearer ${token}` },
     },

@@ -37,7 +37,7 @@ type CollaboratorFormValues = {
 };
 
 export type CollaboratorFormData = CollaboratorFormValues & {
-  photo: string | null;
+  photoFile?: File;
 };
 
 type CollaboratorFormDialogProps = {
@@ -46,6 +46,7 @@ type CollaboratorFormDialogProps = {
   /** Presente = modo edição · null/undefined = modo criação */
   collaborator?: Collaborator | null;
   onSubmit: (data: CollaboratorFormData) => Promise<void> | void;
+  onPhotoSubmit: (file: File) => Promise<void>;
 };
 
 function FieldError({ message }: { message?: string }) {
@@ -65,6 +66,7 @@ function CollaboratorFormInner({
   collaborator,
   onOpenChange,
   onSubmit,
+  onPhotoSubmit,
 }: Omit<CollaboratorFormDialogProps, "open">) {
   const isEditing = !!collaborator;
   const schema = buildCollaboratorSchema(isEditing);
@@ -72,7 +74,10 @@ function CollaboratorFormInner({
   const [photo, setPhoto] = useState<string | null>(
     collaborator?.photo ?? null,
   );
+  const [photoFile, setPhotoFile] = useState<File>();
   const [photoError, setPhotoError] = useState<string | null>(null);
+  const [isSavingPhoto, setSavingPhoto] = useState(false);
+  const [photoSaved, setPhotoSaved] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -103,13 +108,30 @@ function CollaboratorFormInner({
     }
 
     setPhotoError(null);
+    setPhotoSaved(false);
+    setPhotoFile(file);
     const reader = new FileReader();
     reader.onload = () => setPhoto(reader.result as string);
     reader.readAsDataURL(file);
   }
 
+  async function submitPhoto() {
+    if (!photoFile || !isEditing) return;
+    setSavingPhoto(true);
+    setPhotoError(null);
+    try {
+      await onPhotoSubmit(photoFile);
+      setPhotoFile(undefined);
+      setPhotoSaved(true);
+    } catch {
+      setPhotoError("Não foi possível atualizar a foto.");
+    } finally {
+      setSavingPhoto(false);
+    }
+  }
+
   const submit = async (data: CollaboratorFormValues) => {
-    const payload = { ...data, photo };
+    const payload: CollaboratorFormData = { ...data, photoFile };
     if (isEditing && !payload.password) delete (payload as Partial<CollaboratorFormData>).password;
     await onSubmit(payload);
     onOpenChange(false);
@@ -158,13 +180,15 @@ function CollaboratorFormInner({
                 <Camera className="h-3.5 w-3.5" strokeWidth={1.75} />
                 {photo ? "Trocar foto" : "Adicionar foto"}
               </button>
-              {photo && (
+              {isEditing && photoFile && (
                 <button
                   type="button"
-                  onClick={() => setPhoto(null)}
-                  className="rounded-lg px-3 py-1.5 text-xs font-medium text-[#5C6B68] hover:bg-red-50 hover:text-red-600"
+                  disabled={isSavingPhoto}
+                  onClick={() => void submitPhoto()}
+                  className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-[#5C6B68] hover:bg-green-50 hover:text-green-600 disabled:opacity-60"
                 >
-                  Remover
+                  {isSavingPhoto && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                  Salvar
                 </button>
               )}
             </div>
@@ -172,6 +196,7 @@ function CollaboratorFormInner({
               Opcional · JPG ou PNG, até {MAX_PHOTO_SIZE_MB}MB
             </span>
             {photoError && <FieldError message={photoError} />}
+            {photoSaved && <span className="text-[0.7rem] text-green-700">Foto atualizada.</span>}
           </div>
           <input
             ref={fileInputRef}
@@ -301,6 +326,7 @@ export function CollaboratorFormDialog({
   onOpenChange,
   collaborator,
   onSubmit,
+  onPhotoSubmit,
 }: CollaboratorFormDialogProps) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -319,6 +345,7 @@ export function CollaboratorFormDialog({
             collaborator={collaborator}
             onOpenChange={onOpenChange}
             onSubmit={onSubmit}
+            onPhotoSubmit={onPhotoSubmit}
           />
         </Dialog.Popup>
       </Dialog.Portal>

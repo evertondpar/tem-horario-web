@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
-import { CalendarDays, Clock3, Scissors, UserRound } from "lucide-react";
+import { CalendarDays, Clock3, Scissors } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getCollaboratorAppointments } from "../../api/collaborator/appointments";
 import { getAssignedServices } from "../../api/collaborator/services";
 import { storage } from "../../utils/storage";
 import type { Appointment } from "../../types/appointment";
+import { getCollaboratorDashboard } from "../../api/collaborator/dashboard";
+import { CollaboratorAvatar } from "../../components/collaborators/CollaboratorAvatar";
 
 export default function CollaboratorDashboard() {
-  const session = storage.getSession();
+  const [session, setSession] = useState(storage.getSession());
   const collaboratorId = session?.user.id;
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [serviceCount, setServiceCount] = useState(0);
@@ -22,6 +24,17 @@ export default function CollaboratorDashboard() {
       if (serviceResult.status === "fulfilled") setServiceCount(serviceResult.value.length);
     });
   }, [collaboratorId]);
+
+  useEffect(() => {
+    const refreshSession = () => setSession(storage.getSession());
+    window.addEventListener("tem-horario-session-updated", refreshSession);
+    void getCollaboratorDashboard().then(({ collaborator }) => {
+      const current = storage.getSession();
+      if (current?.role !== "collaborator") return;
+      storage.setSession({ ...current, user: { ...current.user, ...collaborator } });
+    });
+    return () => window.removeEventListener("tem-horario-session-updated", refreshSession);
+  }, []);
 
   const today = new Date().toISOString().slice(0, 10);
   const todayAppointments = appointments.filter((item) => item.appointment_date === today);
@@ -52,7 +65,7 @@ export default function CollaboratorDashboard() {
       </div>
       <div className="rounded-2xl border border-[#E4E1D8] bg-white p-5">
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0F5C56]/10 text-[#0F5C56]"><UserRound className="h-5 w-5" /></span>
+          <CollaboratorAvatar name={session?.user.name ?? "Colaborador"} photo={session?.user.photo} size="md" />
           <div><p className="font-medium text-[#12201E]">{session?.user.name}</p><p className="text-sm text-[#5C6B68]">{session?.establishment?.name}</p></div>
         </div>
         <div className="mt-5 flex flex-wrap gap-2">
