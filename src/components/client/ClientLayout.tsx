@@ -4,6 +4,7 @@ import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { getClientProfile } from "../../api/client";
 import { getInitials, cn } from "../../lib/utils";
 import { storage } from "../../utils/storage";
+import { NotificationPermissionPrompt } from "../notifications/NotificationPermissionPrompt";
 
 export default function ClientLayout() {
   const [open, setOpen] = useState(false);
@@ -33,6 +34,6 @@ export default function ClientLayout() {
         <button className="rounded-lg p-2 md:hidden" onClick={() => setOpen((value) => !value)}>{open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}</button>
       </div>
       {open && <div className="border-t border-[#E4E1D8] bg-white p-4 md:hidden">{isClient && <Link to="/perfil" onClick={() => setOpen(false)} className="mb-2 flex items-center gap-3 rounded-lg bg-[#F7F6F2] p-3">{session.user.photo ? <img src={session.user.photo} alt={session.user.name} className="h-9 w-9 rounded-full object-cover" /> : <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0F5C56] text-xs text-white">{getInitials(session.user.name)}</span>}<span className="text-sm font-medium">{session.user.name}</span></Link>}{links.map(({ label, path }) => <Link key={path} to={path} onClick={() => setOpen(false)} className="block rounded-lg px-3 py-2 text-sm font-medium text-[#5C6B68]">{label}</Link>)}{isClient ? <button onClick={logout} className="mt-2 w-full rounded-xl border border-[#E4E1D8] px-4 py-2 text-sm">Sair</button> : <div className="mt-2 grid grid-cols-2 gap-2"><Link to="/entrar" className="rounded-xl border border-[#E4E1D8] px-4 py-2 text-center text-sm">Entrar</Link><Link to="/cadastro" className="rounded-xl bg-[#0F5C56] px-4 py-2 text-center text-sm text-white">Criar conta</Link></div>}</div>}
-    </header><main><Outlet /></main>
+    </header><main><Outlet /></main>{isClient && <NotificationPermissionPrompt />}
   </div>;
 }

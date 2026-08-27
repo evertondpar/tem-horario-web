@@ -7,6 +7,7 @@ import { storage } from "../../utils/storage";
 import type { Appointment } from "../../types/appointment";
 import { getCollaboratorDashboard } from "../../api/collaborator/dashboard";
 import { CollaboratorAvatar } from "../../components/collaborators/CollaboratorAvatar";
+import { NotificationSettings } from "../../components/notifications/NotificationSettings";
 
 export default function CollaboratorDashboard() {
   const [session, setSession] = useState(storage.getSession());
@@ -73,6 +74,7 @@ export default function CollaboratorDashboard() {
           <Link to="/colaborador/agenda" className="rounded-xl border border-[#E4E1D8] px-4 py-2 text-sm font-medium text-[#12201E]">Configurar agenda</Link>
         </div>
       </div>
+      <NotificationSettings />
     </div>
   );
 }

@@ -20,6 +20,7 @@ import { getProfile } from "@/api/establishment/profile/getProfile";
 import { updateProfile } from "@/api/establishment/profile/updateProfile";
 import { updatePhoto } from "@/api/establishment/profile/updatePhoto";
 import { storage } from "@/utils/storage";
+import { NotificationSettings } from "@/components/notifications/NotificationSettings";
 
 const MAX_PHOTO_SIZE_MB = 3;
 const TIME_REGEX = /^([01]\d|2[0-3]):([0-5]\d)$/;
@@ -484,6 +485,7 @@ export default function Configuracoes() {
           </form>
         )}
       </div>
+      <NotificationSettings className="mt-6" />
     </div>
   );
 }

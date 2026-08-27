@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import "@fontsource-variable/geist";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
+import { NotificationPermissionPrompt } from "../notifications/NotificationPermissionPrompt";
 
 export function AppShell() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -19,6 +20,7 @@ export function AppShell() {
           <Outlet />
         </main>
       </div>
+      <NotificationPermissionPrompt />
     </div>
   );
 }
