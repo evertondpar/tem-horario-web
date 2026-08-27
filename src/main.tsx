@@ -3,9 +3,11 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import { RouterProvider } from "react-router-dom";
 import { router } from "./routes/router.tsx";
+import { ForegroundNotificationListener } from "./components/notifications/ForegroundNotificationListener.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
+    <ForegroundNotificationListener />
     <RouterProvider router={router} />
   </StrictMode>,
 );

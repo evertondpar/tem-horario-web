@@ -23,6 +23,10 @@ function getServiceWorkerUrl() {
   return `/firebase-messaging-sw.js?${params.toString()}`;
 }
 
+export function getFirebaseApp() {
+  return getApps().length ? getApp() : initializeApp(firebaseConfig);
+}
+
 export async function getFirebaseMessagingToken() {
   if (!firebaseMessagingConfigured) {
     throw new Error("Configuração pública do Firebase não informada.");
@@ -34,7 +38,7 @@ export async function getFirebaseMessagingToken() {
   const registration = await navigator.serviceWorker.register(
     getServiceWorkerUrl(),
   );
-  const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+  const app = getFirebaseApp();
   return getToken(getMessaging(app), {
     vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
     serviceWorkerRegistration: registration,
