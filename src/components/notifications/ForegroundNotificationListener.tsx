@@ -4,6 +4,10 @@ import {
   firebaseMessagingConfigured,
   getFirebaseApp,
 } from "../../lib/firebase";
+import {
+  APPOINTMENTS_UPDATED_EVENT,
+  type AppointmentNotificationData,
+} from "../../lib/notification-events";
 
 export function ForegroundNotificationListener() {
   useEffect(() => {
@@ -14,6 +18,15 @@ export function ForegroundNotificationListener() {
       if (!active || !supported || !firebaseMessagingConfigured) return;
 
       unsubscribe = onMessage(getMessaging(getFirebaseApp()), (payload) => {
+        if (payload.data?.type === "appointment_updated") {
+          window.dispatchEvent(
+            new CustomEvent<AppointmentNotificationData>(
+              APPOINTMENTS_UPDATED_EVENT,
+              { detail: payload.data },
+            ),
+          );
+        }
+
         if (Notification.permission !== "granted") return;
 
         const title =

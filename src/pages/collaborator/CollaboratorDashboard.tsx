@@ -8,6 +8,7 @@ import type { Appointment } from "../../types/appointment";
 import { getCollaboratorDashboard } from "../../api/collaborator/dashboard";
 import { CollaboratorAvatar } from "../../components/collaborators/CollaboratorAvatar";
 import { NotificationSettings } from "../../components/notifications/NotificationSettings";
+import { APPOINTMENTS_UPDATED_EVENT } from "../../lib/notification-events";
 
 export default function CollaboratorDashboard() {
   const [session, setSession] = useState(storage.getSession());
@@ -17,13 +18,25 @@ export default function CollaboratorDashboard() {
 
   useEffect(() => {
     if (!collaboratorId) return;
-    Promise.allSettled([
-      getCollaboratorAppointments(collaboratorId),
-      getAssignedServices(),
-    ]).then(([appointmentResult, serviceResult]) => {
-      if (appointmentResult.status === "fulfilled") setAppointments(appointmentResult.value);
-      if (serviceResult.status === "fulfilled") setServiceCount(serviceResult.value.length);
-    });
+    let active = true;
+    const refresh = () => void Promise.allSettled([
+        getCollaboratorAppointments(collaboratorId),
+        getAssignedServices(),
+      ]).then(([appointmentResult, serviceResult]) => {
+        if (!active) return;
+        if (appointmentResult.status === "fulfilled") setAppointments(appointmentResult.value);
+        if (serviceResult.status === "fulfilled") setServiceCount(serviceResult.value.length);
+      });
+    const refreshWhenVisible = () => { if (document.visibilityState === "visible") refresh(); };
+
+    refresh();
+    window.addEventListener(APPOINTMENTS_UPDATED_EVENT, refresh);
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+    return () => {
+      active = false;
+      window.removeEventListener(APPOINTMENTS_UPDATED_EVENT, refresh);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+    };
   }, [collaboratorId]);
 
   useEffect(() => {

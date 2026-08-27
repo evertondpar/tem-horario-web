@@ -10,6 +10,7 @@ import {
   getAppointmentsAndCollaborators,
   type ListAppointmentsAndCollaboratorsResponse,
 } from "@/api/establishment/appointments/getAppointmentsAndCollaborators";
+import { APPOINTMENTS_UPDATED_EVENT } from "@/lib/notification-events";
 
 export default function Agendamentos() {
   // TODO: trocar pelos dados reais (GET /appointments — todos os agendamentos
@@ -36,23 +37,21 @@ export default function Agendamentos() {
     filters.collaboratorId !== "all" ||
     filters.status !== "all";
 
-  const handleGetAppointmentsAndCollaborators = async () => {
-    // setLoading(true);
-    // setLoadError(false);
-    try {
-      const response = await getAppointmentsAndCollaborators();
-      setAppointmentsAndCollaborators(response);
-      console.log("res ", response);
-    } catch (err) {
-      console.error("Erro ao carregar os agendas", err);
-      // setLoadError(true);
-    } finally {
-      // setLoading(false);
-      // setHasLoadedOnce(true);
-    }
-  };
   useEffect(() => {
-    handleGetAppointmentsAndCollaborators();
+    let active = true;
+    const refresh = () => void getAppointmentsAndCollaborators()
+      .then((response) => { if (active) setAppointmentsAndCollaborators(response); })
+      .catch((error) => console.error("Erro ao carregar as agendas", error));
+    const refreshWhenVisible = () => { if (document.visibilityState === "visible") refresh(); };
+
+    refresh();
+    window.addEventListener(APPOINTMENTS_UPDATED_EVENT, refresh);
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+    return () => {
+      active = false;
+      window.removeEventListener(APPOINTMENTS_UPDATED_EVENT, refresh);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+    };
   }, []);
   return (
     <div className="flex flex-col gap-6">

@@ -5,6 +5,7 @@ import { AppointmentStatus, APPOINTMENT_STATUS_LABELS, type Appointment } from "
 import { AppointmentStatusBadge } from "../../components/appointments/AppointmentStatusBadge";
 import { formatDateLabel, formatTime } from "../../lib/date";
 import { storage } from "../../utils/storage";
+import { APPOINTMENTS_UPDATED_EVENT } from "../../lib/notification-events";
 
 export default function CollaboratorAppointments() {
   const session = storage.getSession();
@@ -18,7 +19,21 @@ export default function CollaboratorAppointments() {
 
   useEffect(() => {
     if (!collaboratorId) return;
-    getCollaboratorAppointments(collaboratorId).then(setAppointments).catch(() => setError("Não foi possível carregar seus agendamentos.")).finally(() => setLoading(false));
+    let active = true;
+    const refresh = () => void getCollaboratorAppointments(collaboratorId)
+      .then((items) => { if (active) setAppointments(items); })
+      .catch(() => { if (active) setError("Não foi possível carregar seus agendamentos."); })
+      .finally(() => { if (active) setLoading(false); });
+    const refreshWhenVisible = () => { if (document.visibilityState === "visible") refresh(); };
+
+    refresh();
+    window.addEventListener(APPOINTMENTS_UPDATED_EVENT, refresh);
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+    return () => {
+      active = false;
+      window.removeEventListener(APPOINTMENTS_UPDATED_EVENT, refresh);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+    };
   }, [collaboratorId]);
 
   const filtered = useMemo(() => appointments.filter((item) => (status === "all" || item.status === status) && (!date || item.appointment_date === date)), [appointments, status, date]);
