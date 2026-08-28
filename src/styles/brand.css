@@ -1,11 +1,6 @@
-/* tem horário? — tokens de marca compartilhados entre telas.
-   Display face (uso restrito: wordmark e headlines): Fraunces
-   Body/UI face: Geist Variable (@fontsource-variable/geist)
-*/
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap");
+/* Tipografia de marca compartilhada entre as telas. */
 
 .th-display {
-  font-family: "Fraunces", ui-serif, Georgia, serif;
-  font-optical-sizing: auto;
+  font-family: "Roboto", Arial, sans-serif;
   letter-spacing: -0.01em;
 }

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
-import "@fontsource-variable/geist";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 import { NotificationPermissionPrompt } from "../notifications/NotificationPermissionPrompt";
