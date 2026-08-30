@@ -10,7 +10,15 @@ export default function ClientHome() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  useEffect(() => { getClientHome().then(setItems).catch(() => setError(true)).finally(() => setLoading(false)); }, []);
+  useEffect(() => {
+    getClientHome()
+      .then((establishments) => setItems(establishments))
+      .catch(() => {
+        setItems([]);
+        setError(true);
+      })
+      .finally(() => setLoading(false));
+  }, []);
   const filtered = useMemo(() => items.filter((item) => `${item.name} ${item.address}`.toLowerCase().includes(query.toLowerCase())), [items, query]);
   return <>
     <section className="relative overflow-hidden bg-[#0F5C56] px-4 py-16 text-white sm:py-24"><div className="th-grid-texture absolute inset-0 opacity-60" /><div className="relative mx-auto max-w-7xl"><div className="max-w-2xl"><p className="mb-4 text-sm font-medium text-[#F2A93B]">Agende sem complicação</p><h1 className="th-display text-4xl font-medium leading-tight sm:text-6xl">Encontre seu próximo horário.</h1><p className="mt-5 max-w-xl text-base leading-relaxed text-white/65 sm:text-lg">Descubra barbearias perto de você, compare serviços e escolha o melhor horário em poucos passos.</p><div className="relative mt-8 max-w-xl"><Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#5C6B68]" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar por nome ou endereço" className="w-full rounded-2xl bg-white py-4 pl-12 pr-4 text-sm text-[#12201E] outline-none shadow-xl placeholder:text-[#5C6B68]/60" /></div></div></div></section>

@@ -65,9 +65,23 @@ export async function updateClientPhoto(file: File) {
 //   return data;
 // }
 
-export async function getClientHome() {
-  const { data } = await api.get<MarketplaceEstablishment[]>("/clients/home");
-  return data;
+type ClientHomeResponse =
+  | MarketplaceEstablishment[]
+  | {
+      data?: MarketplaceEstablishment[];
+      items?: MarketplaceEstablishment[];
+      establishments?: MarketplaceEstablishment[];
+    };
+
+export async function getClientHome(): Promise<MarketplaceEstablishment[]> {
+  const { data } = await api.get<ClientHomeResponse>("/clients/home");
+
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data.data)) return data.data;
+  if (Array.isArray(data.items)) return data.items;
+  if (Array.isArray(data.establishments)) return data.establishments;
+
+  throw new Error("Formato inválido na resposta da home do cliente.");
 }
 
 export async function getBookingDetails(id: number) {
