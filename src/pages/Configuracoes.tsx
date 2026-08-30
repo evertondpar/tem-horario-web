@@ -21,6 +21,8 @@ import { updateProfile } from "@/api/establishment/profile/updateProfile";
 import { updatePhoto } from "@/api/establishment/profile/updatePhoto";
 import { storage } from "@/utils/storage";
 import { NotificationSettings } from "@/components/notifications/NotificationSettings";
+import { findAddressByZipCode, formatAddress } from "@/api/viacep";
+import { updateCoverPhoto } from "@/api/establishment/profile/updateCoverPhoto";
 
 const MAX_PHOTO_SIZE_MB = 3;
 const TIME_REGEX = /^([01]\d|2[0-3]):([0-5]\d)$/;
@@ -42,6 +44,15 @@ const establishmentSchema = z
       .string()
       .min(1, "Informe o endereço")
       .max(160, "Use no máximo 160 caracteres"),
+    zip_code: z.string().refine((value) => value.replace(/\D/g, "").length === 8, "Informe um CEP válido"),
+    street: z.string().min(1, "Informe a rua"),
+    address_number: z.string().min(1, "Informe o número"),
+    address_complement: z.string(),
+    neighborhood: z.string().min(1, "Informe o bairro"),
+    city: z.string().min(1, "Informe a cidade"),
+    state: z.string().length(2, "Use a sigla do estado"),
+    description: z.string().max(500, "Use no máximo 500 caracteres"),
+    cancellation_policy: z.string().max(500, "Use no máximo 500 caracteres"),
     open_hour: z
       .string()
       .min(1, "Informe o horário de abertura")
@@ -82,6 +93,10 @@ export default function Configuracoes() {
   );
   const [updateFile, setUpdateFile] = useState<File>();
   const [photoError, setPhotoError] = useState<string | null>(null);
+  const [cover, setCover] = useState<string | null>(null);
+  const [coverFile, setCoverFile] = useState<File>();
+  const [savingCover, setSavingCover] = useState(false);
+  const [loadingZip, setLoadingZip] = useState(false);
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [isLoading, setLoading] = useState(true);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
@@ -93,6 +108,8 @@ export default function Configuracoes() {
     register,
     handleSubmit,
     reset,
+    setValue,
+    getValues,
     formState: { errors, isSubmitting, dirtyFields },
   } = useForm<EstablishmentFormData>({
     resolver: zodResolver(establishmentSchema),
@@ -125,7 +142,16 @@ export default function Configuracoes() {
       const payload = {
         name: data.name,
         phone: data.phone,
-        address: data.address,
+        address: formatAddress(data),
+        zip_code: data.zip_code.replace(/\D/g, ""),
+        street: data.street,
+        address_number: data.address_number,
+        address_complement: data.address_complement,
+        neighborhood: data.neighborhood,
+        city: data.city,
+        state: data.state.toUpperCase(),
+        description: data.description,
+        cancellation_policy: data.cancellation_policy,
         ...(dirtyFields.open_hour && { open_hour: data.open_hour }),
         ...(dirtyFields.close_hour && { close_hour: data.close_hour }),
       };
@@ -186,10 +212,20 @@ export default function Configuracoes() {
         name: response.name,
         phone: response.phone,
         address: response.address,
+        zip_code: response.zip_code ?? "",
+        street: response.street ?? "",
+        address_number: response.address_number ?? "",
+        address_complement: response.address_complement ?? "",
+        neighborhood: response.neighborhood ?? "",
+        city: response.city ?? "",
+        state: response.state ?? "",
+        description: response.description ?? "",
+        cancellation_policy: response.cancellation_policy ?? "",
         open_hour: response.open_hour,
         close_hour: response.close_hour,
       });
       setPhoto(response.photo ?? null);
+      setCover(response.cover_photo ?? null);
       console.log("res ", response);
     } catch (err) {
       console.error("Erro ao carregar os serviços", err);
@@ -199,6 +235,36 @@ export default function Configuracoes() {
       setHasLoadedOnce(true);
     }
   };
+
+  async function lookupZipCode() {
+    setLoadingZip(true);
+    setSubmitError(null);
+    try {
+      const result = await findAddressByZipCode(getValues("zip_code"));
+      for (const [key, value] of Object.entries(result)) {
+        setValue(key as keyof EstablishmentFormData, value ?? "", { shouldDirty: true, shouldValidate: true });
+      }
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Não foi possível consultar o CEP.");
+    } finally {
+      setLoadingZip(false);
+    }
+  }
+
+  async function saveCover() {
+    if (!coverFile) return;
+    setSavingCover(true);
+    try {
+      const response = await updateCoverPhoto(coverFile);
+      setCover(response.cover_photo ?? null);
+      setCoverFile(undefined);
+      setSavedAt(new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }));
+    } catch (err) {
+      setSubmitError(getApiErrorMessage(err));
+    } finally {
+      setSavingCover(false);
+    }
+  }
 
   useEffect(() => {
     handleGetProfile();
@@ -254,6 +320,16 @@ export default function Configuracoes() {
                 <span>{submitError}</span>
               </div>
             )}
+
+            {/* Capa pública */}
+            <div>
+              <label className="mb-2 block text-sm font-medium text-[#12201E]">Foto de capa</label>
+              <label className="block cursor-pointer overflow-hidden rounded-2xl border border-dashed border-[#E4E1D8] bg-[#F7F6F2]">
+                {cover ? <img src={cover} alt="Capa do estabelecimento" className="aspect-[16/6] w-full object-cover" /> : <span className="flex aspect-[16/6] items-center justify-center text-sm text-[#5C6B68]">Adicionar imagem horizontal</span>}
+                <input type="file" accept="image/jpeg,image/png" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (!file || file.size > MAX_PHOTO_SIZE_MB * 1024 * 1024) return setPhotoError(`A imagem deve ter até ${MAX_PHOTO_SIZE_MB}MB.`); setCoverFile(file); const reader = new FileReader(); reader.onload = () => setCover(reader.result as string); reader.readAsDataURL(file); }} />
+              </label>
+              {coverFile && <button type="button" disabled={savingCover} onClick={() => void saveCover()} className="mt-2 flex items-center gap-2 rounded-xl border border-[#E4E1D8] px-4 py-2 text-sm font-medium">{savingCover && <Loader2 className="h-4 w-4 animate-spin" />}Salvar capa</button>}
+            </div>
 
             {/* Foto */}
             <div className="flex items-center gap-4">
@@ -372,13 +448,20 @@ export default function Configuracoes() {
               <FieldError message={errors.phone?.message} />
             </div>
 
+            <div className="grid gap-4 border-t border-[#E4E1D8] pt-5">
+              <div><label className="mb-1.5 block text-sm font-medium">CEP</label><div className="flex gap-2"><input {...register("zip_code")} inputMode="numeric" placeholder="00000-000" className="w-full rounded-xl border border-[#E4E1D8] px-3.5 py-2.5 text-sm outline-none focus:border-[#0F5C56]" /><button type="button" disabled={loadingZip} onClick={() => void lookupZipCode()} className="rounded-xl border border-[#E4E1D8] px-4 text-sm">{loadingZip ? <Loader2 className="h-4 w-4 animate-spin" /> : "Buscar"}</button></div><FieldError message={errors.zip_code?.message} /></div>
+              <div><label className="mb-1.5 block text-sm font-medium">Rua</label><input {...register("street")} className="w-full rounded-xl border border-[#E4E1D8] px-3.5 py-2.5 text-sm" /><FieldError message={errors.street?.message} /></div>
+              <div className="grid gap-4 sm:grid-cols-2"><div><label className="mb-1.5 block text-sm font-medium">Número</label><input {...register("address_number")} className="w-full rounded-xl border border-[#E4E1D8] px-3.5 py-2.5 text-sm" /><FieldError message={errors.address_number?.message} /></div><div><label className="mb-1.5 block text-sm font-medium">Complemento</label><input {...register("address_complement")} className="w-full rounded-xl border border-[#E4E1D8] px-3.5 py-2.5 text-sm" /></div></div>
+              <div className="grid gap-4 sm:grid-cols-3"><div><label className="mb-1.5 block text-sm font-medium">Bairro</label><input {...register("neighborhood")} className="w-full rounded-xl border border-[#E4E1D8] px-3.5 py-2.5 text-sm" /></div><div><label className="mb-1.5 block text-sm font-medium">Cidade</label><input {...register("city")} className="w-full rounded-xl border border-[#E4E1D8] px-3.5 py-2.5 text-sm" /></div><div><label className="mb-1.5 block text-sm font-medium">Estado</label><input maxLength={2} {...register("state")} className="w-full rounded-xl border border-[#E4E1D8] px-3.5 py-2.5 text-sm uppercase" /></div></div>
+            </div>
+
             {/* Endereço */}
             <div>
               <label
                 htmlFor="address"
                 className="mb-1.5 block text-sm font-medium text-[#12201E]"
               >
-                Endereço
+                Endereço completo
               </label>
               <div className="relative">
                 <MapPin
@@ -388,6 +471,7 @@ export default function Configuracoes() {
                 <input
                   id="address"
                   type="text"
+                  readOnly
                   placeholder="Rua das Palmeiras, 245 — Vila Mariana, São Paulo - SP"
                   aria-invalid={!!errors.address}
                   className={cn(
@@ -400,6 +484,8 @@ export default function Configuracoes() {
               </div>
               <FieldError message={errors.address?.message} />
             </div>
+
+            <div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-medium">Descrição pública<textarea rows={4} {...register("description")} className="mt-1.5 w-full resize-none rounded-xl border border-[#E4E1D8] p-3 text-sm" placeholder="Conte um pouco sobre o estabelecimento" /></label><label className="text-sm font-medium">Política de cancelamento<textarea rows={4} {...register("cancellation_policy")} className="mt-1.5 w-full resize-none rounded-xl border border-[#E4E1D8] p-3 text-sm" placeholder="Ex.: cancelamentos com até 2 horas de antecedência" /></label></div>
 
             {/* Horário de funcionamento */}
             <div className="grid grid-cols-2 gap-4">

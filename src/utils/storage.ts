@@ -22,6 +22,16 @@ export type Session = {
 };
 
 const SESSION_KEY = "tem-horario-session";
+const PENDING_BOOKING_KEY = "tem-horario-pending-booking";
+
+export type PendingBooking = {
+  establishment_id: number;
+  establishment_name: string;
+  collaborator_id: number;
+  service_id: number;
+  appointment_date: string;
+  start_time: string;
+};
 
 export const storage = {
   getToken: () => localStorage.getItem("token"),
@@ -46,6 +56,17 @@ export const storage = {
     localStorage.setItem(SESSION_KEY, JSON.stringify(session));
     window.dispatchEvent(new Event("tem-horario-session-updated"));
   },
+
+  getPendingBooking: (): PendingBooking | null => {
+    const value = sessionStorage.getItem(PENDING_BOOKING_KEY);
+    if (!value) return null;
+    try { return JSON.parse(value) as PendingBooking; }
+    catch { sessionStorage.removeItem(PENDING_BOOKING_KEY); return null; }
+  },
+
+  setPendingBooking: (booking: PendingBooking) => sessionStorage.setItem(PENDING_BOOKING_KEY, JSON.stringify(booking)),
+
+  clearPendingBooking: () => sessionStorage.removeItem(PENDING_BOOKING_KEY),
 
   clear: () => {
     localStorage.removeItem("token");

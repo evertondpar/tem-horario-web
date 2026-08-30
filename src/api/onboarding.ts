@@ -3,6 +3,14 @@ import type { SessionEstablishment } from "../utils/storage";
 
 export type OnboardingPayload = {
   address: string;
+  zip_code: string;
+  street: string;
+  address_number: string;
+  address_complement: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+  cover_position: number;
   open_hour: string;
   close_hour: string;
   service_name: string;
