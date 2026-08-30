@@ -57,7 +57,7 @@ export default function CollaboratorServices() {
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{services.map((service) => {
         const assigned = linkByService.has(service.id);
         return <article key={service.id} className="rounded-2xl border border-[#E4E1D8] bg-white p-5">
-          <div className="flex items-start justify-between gap-3"><div><h3 className="font-medium text-[#12201E]">{service.name}</h3><p className="mt-1 text-sm text-[#5C6B68]">{formatDuration(service.duration_minutes)} · {formatCurrency(service.price)}</p></div>
+          <div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="font-medium text-[#12201E]">{service.name}</h3><p className="mt-1 text-sm text-[#5C6B68]">{formatDuration(service.duration_minutes)} · {formatCurrency(service.price)}</p></div>
           <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${assigned ? "bg-[#0F5C56]/10 text-[#0F5C56]" : "bg-[#12201E]/5 text-[#5C6B68]"}`}>{assigned ? "Atribuído" : "Não atribuído"}</span></div>
           <button type="button" disabled={changingId === service.id} onClick={() => void toggle(service.id)} className={`mt-5 w-full rounded-xl px-4 py-2 text-sm font-medium transition-colors disabled:opacity-60 ${assigned ? "border border-[#E4E1D8] text-[#5C6B68] hover:bg-[#12201E]/5" : "bg-[#0F5C56] text-white hover:bg-[#0B4842]"}`}>{changingId === service.id ? "Atualizando…" : assigned ? "Remover dos meus serviços" : "Atribuir a mim"}</button>
         </article>;

@@ -11,9 +11,7 @@ type SlotTimelineProps = {
   onToggle?: (index: number) => void;
 };
 
-const GRID_STYLE = {
-  gridTemplateColumns: `repeat(${SLOTS_PER_DAY}, minmax(14px, 1fr))`,
-};
+const GRID_STYLE = { gridTemplateColumns: `repeat(${SLOTS_PER_DAY}, minmax(14px, 1fr))` };
 
 function slotClassName(status: SlotStatusValue) {
   switch (status) {
@@ -34,9 +32,8 @@ function slotStatusLabel(status: SlotStatusValue) {
 
 export function SlotTimeline({ slots, onToggle }: SlotTimelineProps) {
   return (
-    <div className="overflow-x-auto">
-      <div className="min-w-[720px]">
-        <div className="grid gap-[2px]" style={GRID_STYLE}>
+    <div className="w-full min-w-0">
+      <div className="grid grid-cols-4 gap-1 min-[400px]:grid-cols-6 sm:grid-cols-8 lg:grid-cols-12 xl:grid-cols-[repeat(48,minmax(14px,1fr))] xl:gap-[2px]">
           {slots.map((status, index) => (
             <button
               key={index}
@@ -46,14 +43,16 @@ export function SlotTimeline({ slots, onToggle }: SlotTimelineProps) {
               title={`${slotRangeLabel(index)} · ${slotStatusLabel(status)}`}
               aria-label={`${slotRangeLabel(index)}, ${slotStatusLabel(status)}`}
               className={cn(
-                "h-7 rounded-[3px] transition-colors",
+                "h-9 rounded text-[0.6rem] transition-colors xl:h-7 xl:text-transparent",
                 slotClassName(status),
               )}
-            />
+            >
+              <span className="xl:hidden">{slotIndexToTime(index)}</span>
+            </button>
           ))}
-        </div>
+      </div>
 
-        <div className="mt-1.5 grid gap-[2px]" style={GRID_STYLE}>
+        <div className="mt-1.5 hidden gap-[2px] xl:grid" style={GRID_STYLE}>
           {slots.map((_, index) => (
             <span
               key={index}
@@ -63,7 +62,6 @@ export function SlotTimeline({ slots, onToggle }: SlotTimelineProps) {
             </span>
           ))}
         </div>
-      </div>
     </div>
   );
 }
