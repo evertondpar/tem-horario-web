@@ -115,3 +115,32 @@ export async function cancelClientAppointment(
   });
   return data;
 }
+
+export type EstablishmentReview = { id: number; client_id: number; client_name: string; rating: number; comment?: string | null; createdAt: string };
+
+export async function getEstablishmentReviews(id: number) {
+  const { data } = await api.get<EstablishmentReview[]>(`/clients/establishments/${id}/reviews`);
+  return data;
+}
+
+export async function saveEstablishmentReview(id: number, payload: { rating: number; comment?: string }) {
+  const { data } = await api.post<EstablishmentReview>(`/clients/establishments/${id}/reviews`, payload);
+  return data;
+}
+
+export async function getClientFavorites() {
+  const { data } = await api.get<number[]>("/clients/me/favorites");
+  return data;
+}
+
+export async function addClientFavorite(id: number) {
+  await api.post(`/clients/me/favorites/${id}`);
+}
+
+export async function removeClientFavorite(id: number) {
+  await api.delete(`/clients/me/favorites/${id}`);
+}
+
+export async function deleteClientAccount() {
+  await api.delete("/clients/me");
+}

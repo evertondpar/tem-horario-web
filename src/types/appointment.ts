@@ -28,6 +28,8 @@ export type Appointment = {
   id: number;
   collaborator_id: number;
   collaborator: Collaborator;
+  establishment_id?: number;
+  establishment?: { id: number; name: string; address?: string };
   client_name: string;
   client_phone: string;
   service_id: number;
@@ -37,6 +39,7 @@ export type Appointment = {
   appointment_date: string;
   /** formato "HH:mm" ou "HH:mm:ss" */
   start_time: string;
+  end_time?: string;
   createdAt: string;
   updatedAt: string;
 };

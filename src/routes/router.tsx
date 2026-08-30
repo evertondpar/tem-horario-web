@@ -22,12 +22,14 @@ import ClientAppointments from "../pages/client/ClientAppointments";
 import EstablishmentSignup from "../pages/onboarding/EstablishmentSignup";
 import EstablishmentOnboarding from "../pages/onboarding/EstablishmentOnboarding";
 import ClientProfile from "../pages/client/ClientProfile";
+import EstablishmentPublicPage from "../pages/client/EstablishmentPublicPage";
 
 export const router = createBrowserRouter([
   {
     element: <ClientLayout />,
     children: [
       { path: "/", element: <ClientHome /> },
+      { path: "/estabelecimentos/:id", element: <EstablishmentPublicPage /> },
       { path: "/estabelecimentos/:id/agendar", element: <BookingPage /> },
     ],
   },
